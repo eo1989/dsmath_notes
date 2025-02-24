@@ -1,0 +1,42 @@
+---
+title: "Bias/Variance Tradeoff"
+format: html
+jupyter: true
+execute:
+  cache: true
+  echo: fenced
+---
+# Bias/Variance Tradeoff
+
+## Bias
+
+- Error between average model prediction and ground truth
+- The bias of the estimated function tells us the capacity of the underlying model to predict the values
+$\textit{bias} = \mathbin{E}[f^\prime(x)] - f(x)$
+
+## Variance
+
+- Average variability in the model prediction for the given dataset
+- The variance of the estimated function tells you how much the function can adjust to the change in the dataset
+$\textit{variance} = \mathbin{E}[(f^\prime(x) - \mathbin{E}[f^\prime(x)])^2]$
+
+- High Bias
+  - Overly simplified model
+  - Under-fitting
+  - High error on both test and train data
+
+- High Variance
+  - Overly complex model
+  - Over-fitting
+  - Low error on train data and high on test
+  - Starts modelling the noise in the input
+
+---
+The bias-variance tradeoff is a fundamental concept in ML that helps us understand the tradeoff between two types of errors that a model can make: bias and variance. Its crucial to strike a balance between these two types of errors to create a model that generalizes well to new, unseen data.
+
+**Bias** refers to the error due to overly simplistic assumptions in the learning algorithm. A high bias model might underfit the data, meaning it fails to capture the underlying patterns and relationships in the data, leading to poor performance on both the training and test sets.
+
+**Variance** refers to the error due to the model's sensitivity to small fluctuations in the training data. A high variance model might overfit the data, meaning it fits the training data very well but fails to generalize to new data points, resulting in poor performance on the test set.
+
+**Tradeoff Explanation with Example:**
+

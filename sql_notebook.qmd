@@ -1,0 +1,24 @@
+---
+title: SQL Notebook
+date: 2025-02-11
+description: SQL notebook with quarto
+slug: sql-notebook-with-quarto
+categories: [miscellaneous, sql, database, notebook]
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+#| label: write-db
+#| echo: false
+#| eval: false
+
+con_flights <- DBI::dbConnect(duckdb::duckdb(), dbdir = "./data/flights.db", read_only = FALSE)
+
+con_superheros <- DBI::dbConnect(duckdb::duckdb(), dbdir = "./data/superheors.db", read_only = FALSE)
+
+```
+
+
+
+
