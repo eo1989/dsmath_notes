@@ -1,0 +1,50 @@
+---
+title: DS Intro
+author: Ernest Orlowski
+format: html
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.19.1
+  kernelspec:
+    display_name: jupyterlab_python3
+    language: python
+    name: jupyterlab_python3
+    path: /Users/eo/Library/Jupyter/kernels/jupyterlab_python3
+---
+
+# From Data Science - A First Intro with Python
+
+## Pandas Rehash
+
+Extracting only the relevant rows corresponding to Aboriginal languages, and only keeping the `language` and `mother_tongue` columns.
+
+```{python}
+import pandas as pd
+import altair as alt
+
+with pd.option_context(
+    "compute.use_numba",
+    True,
+    "display.max_rows",
+    20,
+    "display.max_columns",
+    12,
+    "display.html.use_mathjax",
+    True,
+    "io.parquet.engine",
+    "pyarrow",
+    "styler.render.max_columns",
+    20,
+    "styler.format.precision",
+    4,
+):
+    pass
+
+can_lang_df = pd.read_csv(
+    "./introduction-to-datascience-python/source/data/can_lang.csv"
+)
+```
