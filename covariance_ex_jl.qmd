@@ -1,0 +1,29 @@
+---
+title: StatsPlots Covariance Example
+author: Ernest Orlowski
+date: 7/21/2025
+format:
+  html:
+    code-fold: true
+engine: julia
+# jupyter:
+#     kernelspec:
+#         name: julia-1.11
+#         display_name: julia-1.11
+#         language: julia
+---
+
+# Covariance Ellipses
+
+A $2\times2$ covariance matrix $\Sigma$ can be plotted as an ellipse, which is a contour line of a Gaussian density function with variance $\Sigma$. See @fig-covariance for an example.
+
+```{julia}
+#| label: fig-covariance
+#| fig-cap: "Covariance ellipses"
+
+using StatsPlots
+gr(size = (500, 280))
+
+covellipse([0, 2], [2 1; 1 4], n_std = 2, aspect_ratio = 1, label = "cov1")
+covellipse!([1, 0], [1 -0.5; -0.5 3], showaxes = true, label = "cov2")
+```

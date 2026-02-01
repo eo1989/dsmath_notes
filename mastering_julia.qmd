@@ -1,0 +1,77 @@
+---
+author: Ernest Orlowski
+engine: julia
+---
+
+# Master Julia 2E Packt
+
+```{julia}
+# %%
+f(z::Int) = begin
+    z = 0
+end
+f(z::Array{Int}) = begin
+    z[1] = 0
+end
+
+x = 1
+@show typeof(x)
+@show isimmutable(x)
+println("Before call by value: ", x)
+f(x)
+println("After call by value: ", x, "\n")
+
+x = [1]
+@show typeof(x)
+@show isimmutable(x)
+println("Before call by reference: ", x)
+f(x)
+println("After call by reference: ", x, "\n")
+
+```
+
+```{julia}
+# rsq(x) = 1 / (x^2)
+# map(rsq, [1, 2, 3, 4]) == map([1, 2, 3, 4]) do x rsq(x) end
+sum(collect(1:10^6)) do x
+    rsq(x)
+end # the result is Euler's solution to the sum of the series (rsq) 1/x^2, which converges to π*π/6
+sq(X) = X .* X
+pretty_table(map(sq, Any[1, 2.0, [1, 2, 3], 7//5, "Hi"]))
+
+function counter()
+    n = 0
+    () -> n += 1, () -> n = 0
+end
+
+function hailstone(n::Integer)
+    k = 1
+    a = [n]
+    while n > 1
+        n = (n % 2 == 0) ? n >> 1 : 3n + 1
+        push!(a, n)
+        k += 1
+    end
+    a
+end
+hailstone(17)
+(m, s) = hailstone(1_000)
+(m, s) = hailstone(1_000_000)
+
+for i = 1000:1000
+    (mx, sx) = hailstone(i)
+    println("hailstone($i) => $mx iterations")
+end
+
+using Match
+allodds(x) = @match x begin
+    m::Int, if iseven(m) || (m < 3)
+    end => "Not a valid choice"
+    n::Int, if n == 3 || n == 5 || n == 7
+    end => "$x is prime"
+    _ => "By induction all numbers are prime"
+end
+allodds(3)
+allodds(6)
+allodds(9)
+```

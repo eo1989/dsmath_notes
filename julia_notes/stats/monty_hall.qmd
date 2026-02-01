@@ -1,0 +1,72 @@
+---
+title: <center>Monty Hall Problem</center>
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.18.1
+  kernelspec:
+    display_name: Julia 1.11.6
+    language: julia
+    name: julia-1.11
+---
+
+
+---
+
+Imagine three doors. Behind one door is a prize, and behind the other two are joke prizes.
+You want the car. Monty asks you to choose a door. He knows where everything is, but you know nothing.
+You want the car, so you choose door 1. Monty opens one of the other doors, say door 3, to reveal a joke prize.
+He offers you the chance to switch to door 2 if you like.
+
+Q. Should you stick with your original choice or switch to door 2? Does it matter?
+A. The correct answer is that you should switch. Nevertheless, many people find this counterintuitive.
+After all, now two doors are available: door 1 and 2. Surely they have an equal chance of leading to the prize, so its the same as flipping a coin.
+
+However this is incorrect, because initially, the probability that your choice was a winner was $1/3$. Meaning that th eprize was in *one of the other doors* is $2/3$.
+Since the prize is guaranteed to be somewhere the total probabilities must add to 1. These initial probabilities
+still hold. The probability that door 1 contains the prize is still $1/3$. The probability that one of the others is, instead, is *still* $2/3$.
+But now the set of "one of the others" consists of just door 2, since Monty has eliminated door 3. Meaning you should switch to increase your chances of winning
+from $1/3$ to $2/3$.
+
+Below is some julia code to run a simulation of the Monty Hall problem to verify this result.
+
+
+```{julia}
+using Plots
+```
+
+```{julia}
+N = 3_000
+
+stay = zeros(Int32, N)
+switch = zeros(Int32, N)
+
+for game in 1:N
+    prize = rand(1:3)
+    choice = rand(1:3)
+    if choice == prize
+        stay[game] = 1
+    end
+end
+
+for game in 1:N
+    prize = rand(1:3)
+    choice = rand(1:3)
+    if choice != prize
+        switch[game] = 1
+    end
+end
+
+stayra = [sum(stay[1:i]) / i for i in 1:N]
+switchra = [sum(switch[1:i]) / i for i in 1:N]
+```
+
+```{julia}
+plot(1:N, [stayra, switchra, ones(N) * 1 / 3, ones(N) * 2 / 3], label=["Stay" "Switch" "" ""])
+annotate!(2700, 1 / 3 + 0.05, "1/3")
+annotate!(2700, 2 / 3 + 0.05, "2/3")
+```
+

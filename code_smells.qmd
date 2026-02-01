@@ -1,0 +1,11 @@
+---
+author: Ernest Orlowski
+title: Code Smells
+format:
+  html:
+    code-fold: true
+engine: julia
+execute:
+  echo: true
+  cache: true
+---

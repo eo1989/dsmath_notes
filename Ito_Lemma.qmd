@@ -1,0 +1,46 @@
+---
+author: Ernest Orlowski
+format:
+  html:
+    code-fold: true
+engine: julia
+# jupyter:
+#   kernelspec:
+#     name: python3
+#     display_name: "Python 3 (ipykernel)"
+#     language: python
+---
+
+# Ito's Lemma & Derivatives
+
+In the case of *deterministic* functions, there is no randomness in the differentials.
+When we have a time dependent function of a stochastic process (meaning a its a function of a random process over time) $f(t, X_{t}$ where $X_{t}$ can be a geometric\/ brownian motion, or any stochastic process.
+
+- All these higher-order terms dont drop out - we need a correction term (Itô' Lemma!)
+
+---
+
+### Stochastic Calculus Intuition
+
+Typically when dealing with brownian motion $W_{t}$, it can be shown:
+
+<!-- # NOTE:   including the code above from a separate note. -->
+- $dt^{2} \rightarrow 0 \enspace\text{as}\enspace dt \rightarrow 0$ because $dt$ acts like the higher-order differentials above
+- $dtdW_{t} \rightarrow 0 \enspace\text{as}\enspace dt \rightarrow 0$ because $dt$ will go to zero and drag $dW_{t}$ to zero also.
+
+The big difference:
+
+- $(dW_{t})^2 \rightarrow dt$ which says something about the quadratic variaion, the variance, of $W_{t}$
+
+**Less Formal, More Intuitive**
+
+$W_{t+\delta t} - W_{t} \sim \mathcal{N}(0, \delta t)$, increments in Brownian motion are normal scaled by the time step by $\text{def(n)}$
+As the increment approaches zer we can call it a differential:
+$$
+\Delta t \rightarrow 0 \implies dW_{t} \sim \mathcal{N}(0, dt)
+$$
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+```

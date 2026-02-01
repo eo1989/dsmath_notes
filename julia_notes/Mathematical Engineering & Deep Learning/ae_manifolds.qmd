@@ -1,0 +1,23 @@
+---
+title: manifolds
+format: 
+  html:
+    toc: true
+    toc-location: left
+    code-fold: true
+    code-tools: true
+    theme: cosmo
+    css: styles.css
+    number-sections: true
+    page-layout: wide
+    fig-width: 800
+    fig-height: 400
+    fig-align: center
+    lightbox: true
+    math-method: katex
+    toc-depth: 3
+engine: julia
+author: Ernest Orlowski
+date: 08-26-2025
+---
+

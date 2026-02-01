@@ -1,0 +1,49 @@
+---
+engine: julia
+author: "Ernest Orlowski"
+format:
+  html:
+    code-fold: true
+    page-layout: full
+    grid:
+        margin-width: 450px
+        body-width: 600px
+---
+```{julia}
+#| code-line-numbers: true
+#| width: 1200
+using Distributions, Plots;
+pyplot();
+
+μ, σ = 10, 4
+n, N = 10, 10^6
+
+s_μ = Array{Float64}(undef, N)
+s_var = Array{Float64}(undef, N)
+t_stats = Array{Float64}(undef, N)
+
+for i in 1:N
+    data = rand(Normal(μ, σ), n)
+    sample_μ = mean(data)
+    sample_vars = var(data)
+    s_μ[i] = sample_μ
+    s_var[i] = sample_vars
+    t_stats[i] = (sample_μ - μ) / (sqrt(sample_vars / n))
+end
+
+xRange_μ = 5:0.1:15
+xRange_var = 0:0.1:60
+xRange_tstat = -5:0.1:5
+
+p1 = stephist(s_μ, bins=50, c=:blue, normed=true, legend=false)
+p1 = plot!(xRange_μ, pdf.(Normal(μ, σ / sqrt(n)), xRange_μ), c=:red, xlims=(5, 15), ylims=(0, 0.35), xlabel="Sample μ", ylabel="Density")
+
+p2 = stephist(s_var, bins=50, c=:blue, normed=true, label="Simulated")
+p2 = plot!(xRange_var, (n - 1) / σ^2 * pdf.(Chisq(n - 1), xRange_var * (n - 1) / σ^2), c=:red, label="Analytic", xlims=(0, 60), ylims=(0, 0.06), xlabel="Sample Variance", ylabel="Density")
+
+p3 = stephist(t_stats, bins=100, c=:blue, normed=true, legend=false)
+p3 = plot!(xRange_tstat, pdf.(TDist(n - 1), xRange_tstat), c=:red, xlims=(-5, 5), ylims=(0, 0.4), xlabel="t-statistic", ylabel="Density")
+
+plot(p1, p2, p3, layout=(1, 3), size=(1200, 400))
+
+```

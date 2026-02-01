@@ -1,0 +1,11 @@
+/.quarto/
+.vscode
+.jupyter_cache
+.git
+.pytest_cache
+.quarto
+:-
+__pycache__
+_extensions
+
+**/*.quarto_ipynb

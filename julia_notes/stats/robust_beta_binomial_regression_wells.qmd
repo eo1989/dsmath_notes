@@ -1,0 +1,93 @@
+---
+engine: julia
+author: Ernest Orlowski
+title: Robust Beta/Binomial Regression
+format: html
+---
+
+# Notes on Beta & Binomial Regressions
+
+A Regression is a process for finding the relationship between inputs and outputs.
+
+## Logistic Regression & Generalized Linear Model
+
+A `Logistic Regression` are used when our dependent variable is **binary**. It only takes two distinct values, $1$ and $0$. Logistic Regressions behave exactly as a linear model: it takes a prediction by simply computing a weighted sum of independent variables $X$ using the estimated coefficients $\beta$, along with a constant term $\alpha$. A difference lies in that instead of outputting a *continuous* value $\gamma$, it returns a **logistic function** of value:
+$$
+\text{logistic}(x)=\frac{1}{1 + e^{-x}}
+$$
+
+Because these models are linear (due to the conditional expectation of $Y$ given $X$ is linear/affine), we're able to transform elements of $X$ to accomodate some non-linear relationships as long as transformed values of $X$ interact linearly. Since $X$ is considered non-random in the regression, such transformations allowed us to stay within the realm of linear regression and least squares. What happens if you want to transform $Y$? This requires *Generalized LinearModels (GLB)*.
+
+For a GLM, we choose a one-to-one real function $g(\centerdot)$ and call it a *link function*.
+$$
+(\mathbf{Y}) = \beta^{\tau}\mathbf{X} + \epsilon, \enspace \textit{or} \enspace \mathbf{Y} = g^{-1}(\beta^{\tau}\mathbf{X} + \epsilon)
+$$
+
+where $g^{-1}(\centerdot)$ is the *inverse link function*. Now considering the conditional expectation of $\textbf{Y}$ given $\textbf{X} = x$, you get:
+$$
+% 8.6 statswithjulia pg 349
+\hat{y}(x) = \mathbin{E}[g^{-1}(\beta^{\tau}x + \epsilon)]
+$$
+The random component in this expectation is $\epsilon$ and for any distribution of $\epsilon$ and every link function, there is some expected value function $\hat{y}(x)$. In regressions, the link function is merely the identity function $g(y) = y$ in which case $\hat{y}(x) = \beta^{\tau}x$. This is because the expectation is linear and $\epsilon$ has zero mean.
+```{julia}
+# %%
+using Turing, CSV, DataFrames, StatsBase, LinearAlgebra
+using StatsFuns: logistic
+using Random: seed!
+
+seed!(123)
+# %%
+wells = CSV.read("/Users/eo/Downloads/wells.csv", DataFrame)
+
+# NOTE: define data matrix _x and standardize
+_x = Matrix(select(wells, Not(:switch)))
+_x = standardize(ZScoreTransform, _x; dims=1)
+
+# defining depend. var _y
+_y = wells[:, :switch]
+
+# %%
+# alt param's
+function BetaBinom2(n, μ, ϕ)
+    α = μ * ϕ
+    β = (1 - μ) * ϕ
+    α = α > 0 ? α : 1e-4  # numerical stability
+    β = β > 0 ? β : 1e-4  # numerical stability
+
+    return BetaBinomial(n, α, β)
+end
+
+# %%
+# defining model
+@model function beta_binom_regression(_x, _y; predictors=size(_x, 2))
+    # priors
+    α ~ TDist(3) * 2.5
+    β ~ filldist(TDist(3) * 2.5, predictors)
+    ϕ ~ Exponential(1)
+
+    # likelihood
+    ρ̂ = logistic.(α .+ _x * β)
+
+    # explicit loop avoids LazyArray + arraydist producing Any-typed broadcast that breaks AD
+    for i in eachindex(_y)
+        _y[i] ~ BetaBinom2(1, ρ̂[i], ϕ)
+    end
+    # NOTE: try BetaBinom2(n, ρ̂, ϕ) to try to group the successes next
+    return (; _y, α, β, ρ̂, ϕ)
+end
+
+# %%
+# instantiating model
+model = beta_binom_regression(_x, _y)
+
+# sampling with NUTS w/ 4 multithreaded parallel chains, 2k iterations w/ 1k warmup
+chnn = sample(model, NUTS(1_000, 0.8), MCMCThreads(), 1_000, 4)
+println(DataFrame(summarystats(chnn)))
+```
+
+### Probit Function
+
+You can opt to choose to use the **probit function** $\Phi$, which is the CDF of a normal distribution:
+$$
+\Phi(x) = \frac{1}{\sqrt{2\pi}}\int^{x}_{-\infty}e^{\frac{-t^{2}}{2}}dt
+$$

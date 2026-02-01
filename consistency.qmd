@@ -1,0 +1,29 @@
+---
+author: Ernest Orlowski
+format:
+  html:
+    code-fold: true
+jupyter: python3
+title: Consistency of Sample Mean
+---
+
+Assume that we have a random sample of size $n$ from a population with $N(\mu,\sigma^{2})$. Lets investigate how the probability 
+$\text{Pr}(\vert \bar X_{n} - \mu \vert > \epsilon)$ changes with respect to $n$ and $\epsilon$ and, when $\sigma^{2} = 4$.
+::: {.notes}
+That due to symmetry of normal distribution,
+$$
+\text{Pr}(\vert \bar X_{n} - \mu \vert > \epsilon) = \text{2Pr}(\mathrm{Z} > \frac{\epsilon}{\sigma/\sqrt{n}}) = 2\left(1- \Phi\left(\frac{\epsilon}{\sigma/\sqrt{n}}\right)\right)
+$$
+:::
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.stats as st
+from IPython.display import Markdown, display
+```
+
+```{python}
+def xbar_consistency(eps, col):
+    
+```

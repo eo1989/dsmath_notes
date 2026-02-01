@@ -1,0 +1,56 @@
+---
+author: Ernest Orlowski
+format: html
+engine: jupyter
+jupyter: julia-1.11
+---
+# Linear Regression & Extensions
+
+
+### Classical Approach for Model Selection: Stepwise Regression
+The classical appoach to model selection in linear regression has been *stepwise regression*. Simply incrementally expand, or collapse, the model. Each time evaluating p-values to make the next choice of which variable to add or remove.
+
+- Both methods below are considered outdated and inferior to the LASSO method, but should be noted nonetheless.
+- Expanding method is called *forward selection*
+  - based on adding variables to the model one by one.
+- Collapsing approach is called *backward elimination*
+  - based on removing variables one by one.
+
+Backward elimination begins with a full set of variables (features), (which might also include any potential variable transformations employed). Then a regression model is fit and the p-value associated with each variable is examined and compared to a predefined threshold $p^\star$ such as $p^\star$ = 0.05. If all p-values are less than $p^\star$ then the full model is retained. Otherwise the algorithm dictates to remove the variable with the highest p-value. Refit the model again to the reduced set of variables, and the process repeats. If all variables have p-values less than (or equal to) $p^\star$ the algorithm terminates, otherwise, the highest p-value variable is removed, and so on.
+> Note: During the iterations, the p-values are generally modified as the reduction of variables in the model affects the p-values of all other variables. A plus of backward elimination is that its simple to execute, as we is done in the code example below [code](). A drawback is that there is no theoretical foundation justifying why such a *greedy* algorithm works well.
+
+```{julia}
+using StatsModels, RDatasets, DataFrames, GLM, Random
+Random.seed!(0)
+
+n = 30
+df = dataset("MASS", "cpus")[1:n, :]
+df.Freq = map(x -> 10^9 / x, df.CycT)
+
+df = df[:, [:Perf, :MMax, :Cach, :ChMax, :Freq]]
+df.Junk1 = rand(n)
+df.Junk2 = rand(n)
+
+function stepReg(df, reVar, pThresh)
+    predVars = setdiff(propertynames(df), [reVar])
+    numVars = length(predVars)
+    model = nothing
+    while numVars > 0
+        fm = term(reVar) ~ term.((1, predVars...))
+        model = lm(fm, df)
+        pVals = coeftable(model).cols[4][2:end]
+        println("Variables: ", predVars)
+        println("P-Values", round.(pVals, digits=3))
+        pVal, knockout = findmax(pVals)
+        pVal < pThresh && break
+        println("\tRemoving the variable: ", predVars[knockout], " with p-value =  ", round(pVal, digits=3))
+        deleteat!(predVars, knockout)
+        numVars = length(predVars)
+    end
+    model
+end
+
+model = stepReg(df, :Perf, 0.05)
+println(model)
+```
+Backward elimination is carried out

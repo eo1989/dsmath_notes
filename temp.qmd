@@ -1,0 +1,33 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: "1.0"
+      jupytext_version: 1.17.0
+  kernelspec:
+    display_name: Gen
+    language: python
+    name: python3
+---
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+```
+
+```{python}
+x = pd.Series(index=["a", "b", "d", "z", "z"], data=[1, 3, 9, 11, 12])
+x
+```
+
+```{python}
+x.a
+```
+
+```python
+import package
+```

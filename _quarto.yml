@@ -1,0 +1,19 @@
+engines: ["julia"]
+project:
+  type: website
+  output-dir: _output
+
+toc: true
+number-sections: true
+
+format:
+  html:
+    html-math-method: katex
+  revealjs:
+    menu: false
+    progress: false
+
+search: false
+
+execute:
+  daemon: true

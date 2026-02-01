@@ -1,0 +1,72 @@
+---
+author: Ernest Orlowski
+title: Modern Python Cookbook Py312 2024
+format: html
+jupyter: jupyterlab_python3
+---
+
+# Modern Python Cookbook - 130+ Updated Recipes For Modern Python 3.12 With New Techniques & Tools (Py312, 3E, 2024, Packt, SLott)
+
+## Ch 12 - Graphics & Visualization with Jupyter Lab
+
+Visualization with correlation coefficients and linear regression model. The
+imports required to use Pydantic to load json-formatted data.
+
+
+### Anscombes Quartet
+
+```{python}
+import json
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+from pydantic import BaseModel
+
+source_path = Path.cwd().parent.parent / "Downloads" / "anscombe.json"
+
+with source_path.open() as source_file:
+    all_data = json.load(source_file)
+[data["series"] for data in all_data]
+```
+
+```{python}
+all_data[0]["data"]
+```
+
+#### Pydantic Model
+
+```{python}
+class Pair(BaseModel):
+    x: float
+    y: float
+
+
+class Series(BaseModel):
+    series: str
+    data: list[Pair]
+```
+
+Reading the cleaned data.
+
+```{python}
+source = Path.cwd().parent.parent / "Downloads" / "anscombe.json"
+
+with source.open() as source_file:
+    json_doc = json.load(source_file)
+    source_data = (Series.model_validate(s) for s in json_doc)
+    quartet = {s.series: s for s in source_data}
+```
+
+
+The value of `clean_data` contains a list of four individual `Series` objects.
+An expression like `quartet['I']` will reveal one of the series.
+
+```{python}
+x = [p.x for p in quartet["I"].data]
+
+y = [p.y for p in quartet["I"].data]
+
+plt.scatter(x, y)
+plt.title(f"Series {quartet['I'].series}")
+plt.show()
+```

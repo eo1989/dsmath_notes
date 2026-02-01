@@ -1,0 +1,71 @@
+---
+author: Ernest Orlowski
+format: html
+engine: julia
+jupyter: julia-1.11
+---
+# Notes w/ a few different books
+
+## Julia Quick Syntax (2E)
+
+The following fictional database will be used throughout the notes.
+```{julia}
+using CSV
+using DataFrames
+df = DataFrame(region      = ["US", "US", "US", "US", "EU", "EU", "EU", "EU"],
+               product     = ["Hardwood", "Hardwood", "Softwood", "Softwood", "Hardwood", "Hardwood", "Softwood", "Softwood"],
+               year        = ["2010", "2020","2010", "2020","2010", "2020","2010", "2020"],
+               production  = [3.3, 3.2, 2.3, 2.1, 2.7, 2.8, 1.5, 1.3],
+               consumption = [4.3, 7.4, 2.5, 9.8, 3.2, 4.3, 6.5, 3.0]
+              )
+
+```
+An empty df can be created via:
+<!--df2 = DataFrame(A = Int64[], B = Float64[]) -->
+
+To convert a df from a matrix of data, you must either pass a second parameter as a header name or use the `:auto` keyword:
+```{julia}
+mat = [1 2 3; 4 5 6]
+headers = ["c1", "c2", "c3"]
+df2 = DataFrame(mat, :auto)  # by default col names are x1, x2, x3 ...
+```
+
+```{julia}
+df2 = DataFrame(mat, headers)
+```
+
+Also possible to create a df from a table that is hard-coded:
+```{julia}
+using CSV
+df2 = CSV.read(IOBuffer("""
+region product   year  production  consumption
+US     Hardwood  2010  3.3         4.3
+US     Hardwood  2020  3.2         7.4
+US     Softwood  2010  2.3         2.5
+US     Softwood  2020  2.1         9.8
+EU     Hardwood  2010  2.7         3.2
+EU     Hardwood  2020  2.8         4.3
+EU     Softwood  2010  1.5         6.5
+EU     Softwood  2020  1.3         3.0
+"""), DataFrame, delim = " ", ignorerepeated = true)
+```
+
+
+## Statistics with Julia
+
+### Plots for single samples & time series
+
+In the following example the TimeSeries package will carry out smoothing and compare two window size values, L = 7 (weekly) and L = 14 (fortnightly). This package contains a variety of more advanced time-series manipulation functions.
+
+```{julia}
+using DataFrames, CSV, Statistics, Dates, Plots, Measures; pyplot()
+import ZipFile
+```
+
+Using temperature data from statswithjulia csv:
+----------
+
+```{julia}
+data = CSV.read("../../../../Downloads/StatsWithJuliaBook-master/data/temperatures.csv")
+```
+

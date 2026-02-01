@@ -1,0 +1,15 @@
+---
+title: "Untitled"
+format: html
+jupyter:
+    kernelspec:
+        display_name: julia-1.11
+        language: julia
+        name: julia-1.11
+code-line-numbers: true
+---
+```{julia}
+using Plots, Distributions, PlotThemes, DataFrames
+#
+
+```

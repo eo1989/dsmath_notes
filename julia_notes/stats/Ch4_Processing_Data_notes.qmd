@@ -1,0 +1,60 @@
+---
+engine: julia
+author: "Ernest Orlowski"
+format:
+  html:
+    code-fold: true
+    toc: false
+---
+
+# Processing & Summarizing Data
+
+```{julia}
+using
+```
+
+# Statistical Inference Concepts
+
+## 5.1 Random Sample & Distributions of Statistics
+```{julia}
+using Distributions, Random, Plots;
+pyplot();
+
+Random.seed!(42)
+
+λ = 1 / 4.5
+expDist = Exponential(1 / λ)
+n, N = 10, 10^6
+
+means = Array{Float64}(undef, N)
+vars = Array{Float64}(undef, N)
+
+for i in 1:N
+    data = rand(expDist, n)
+    means[i] = mean(data)
+    vars[i] = var(data)
+end
+
+println("Actual mean: ", mean(expDist), "\nMean of sample means: ", mean(means))
+
+println("Actual variance: ", var(expDist), "\nMean of sample variances: ", mean(vars))
+
+stephist(means, bins=200, c=:blue, normed=true, label="Histogram of Sample Means")
+stephist!(vars, bins=600, c=:red, normed=true, label="Histogram of Sample Variances", xlims=(0, 40), ylims=(0, 0.4), xlabel="Statistic value", ylabel="Density")
+```
+
+::: {.callout-note collapse="true"}
+After calculating the sample mean and variance, it can be seen that the estimated expected value of the simulated data is a good approximation to the mean and variance parameters of the underlying exponential distribution. That is, for an exponential distribution with rate $\lambda$, the mean is $\lambda^{-1}$ and the variance is $\lambda^{-2}$. The histograms of the sample means and sample variances are using 200 & 600 bins, respectively.
+:::
+
+## 5.2 Sampling from Normla Populations
+
+Its assumed (*normality assumption*) that the distribution $F(x; \Theta)$ is a normal distribution and hence $\Theta = (\mu, \sigma^{2})$. The distribution of the random variables $\bar{X}$ and $\mathit{S}^{2}$ as well as transformations of them are well known. The three relationships play a key role:
+
+$$
+\begin{aligned}
+    \bar{X} ~ \text{Normal}(\mu, \sigma^{2})
+    (n - 1)\mathit{S}^{2} \div \sigma^{2} ~ \chi^{2}_{n - 1} \\
+    \text{T} := \frac{\bar{X}-\mu}{\mathit{S} \div \sqrt{n}} ~ \tau_{n - 1} \\
+\end{aligned}
+$$

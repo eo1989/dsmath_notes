@@ -1,0 +1,163 @@
+---
+title: Simulating Interest Rate Changes
+format: html
+engine: jupyter
+execute:
+  echo: true
+  fence: true
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.17.2
+  kernelspec:
+    display_name: Python 3 (ipykernel)
+    language: python
+    name: python3
+---
+
+
+```{python}
+import numpy as np
+import pandas as pd
+```
+
+## Cox Ingersoll Ross Model (CIR) for Interest Rates
+
+The model determines interest rate movements as a product of current volatility, the mean rate, and spreads. It then introduces a market risk element. The square root element doesnt allow for negative rates and the model assumes mean revision toward a long term normal interest rate level.
+
+$$
+dR_t = \alpha(b - R_t)dt + \sigma\sqrt{R_t}dW_t
+$$
+
+- $R_t$: Interest rate at time $t$
+- $\alpha$: Speed of mean reversion
+- $b$: Long term mean interest rate
+- $\sigma$: Volatility parameter
+- $dW_t$: Brownian motion increment
+
+Instead of a geometric brownian motion, the mean reversion model features parameters to control the speed of reversion as well as the long term average rate. This can be read as describing the change in interest at any point of time as a multiple of the distance of the current rate from its long term mean plus a random value that depends on the volatility parameter.
+Therefore, we can start at some rate $R_0$ and generate a sequence of rates over time using the change in rate defined by the stochastic differential equation above. If you drop the $\sqrt{R_t}$ term, you get a linear, simpler Vasicek model. The CIR model eliminates the possibility of negative interest rates by shutting down the volatility term as interest rates approach zero.
+
+
+### Short Rate vs Annualized Rate
+We should understand the difference between the "instantaneous" or "short rate".
+The intstantaneous rate needs to be compounded into an annual rate as such:
+$$
+1 + R_{annual} = e^{R_{inst}}
+$$
+Generall, if you compound every $1/N$ times a year(i.e. N times a year), you get:
+$$
+(1 + \frac{R}{N})^{N}
+$$
+
+```{python}
+def instant_to_annual(r):
+    """
+    convert an instantaneous rate to an annual rate
+    """
+    return np.expm1(r)
+
+
+def ann_to_inst(r):
+    """
+    convert an annual rate to an instantaneous rate
+    """
+    return np.log1p(r)
+```
+
+```{python}
+n_years = 10
+n_scenarios = 1
+a = 0.05
+b = 0.03
+sigma = 0.05
+steps_per_year = 12
+r_0 = 0.02
+```
+
+```{python}
+r_0 = ann_to_inst(r_0)
+dt = 1 / steps_per_year
+num_steps = int(n_years * steps_per_year) + 1  # n_years might be a float
+
+shock = np.random.normal(0, scale=np.sqrt(dt), size=(num_steps, n_scenarios))
+rates = np.empty_like(shock)
+rates[0] = r_0
+for step in range(1, num_steps):
+    r_t = rates[step - 1]
+    d_r_t = a * (b - r_t) * dt + sigma * np.sqrt(r_t) * shock[step]
+    rates[step] = abs(
+        r_t + d_r_t
+    )  # just in case of roundoff errors going negative
+
+pd.DataFrame(data=instant_to_annual(rates), index=range(num_steps)).plot(
+    figsize=(18, 8)
+)
+```
+
+```{python}
+def CIR(
+    n_years=10,
+    n_scenarios=1,
+    a=0.05,
+    b=0.03,
+    sigma=0.05,
+    steps_per_year=12,
+    r_0=None,
+):
+    """
+    Generate random interest rate evolution over time using the CIR model.
+    b & r_0 are assumed to be annual rates.
+    Returns a DataFrame with the annualized interest rates.
+    """
+    if r_0 is None:
+        r_0 = b
+    r_0 = ann_to_inst(r_0)
+    dt = 1 / steps_per_year
+    num_steps = int(n_years * steps_per_year) + 1
+
+    shock = np.random.normal(
+        0, scale=np.sqrt(dt), size=(num_steps, n_scenarios)
+    )
+    rates = np.empty_like(shock)
+    rates[0] = r_0
+    for step in range(1, num_steps):
+        r_t = rates[step - 1]
+        d_r_t = a * (b - r_t) * dt + sigma * np.sqrt(r_t) * shock[step]
+        rates[step] = abs(
+            r_t + d_r_t
+        )  # just in case of roundoff errors going negative
+    return pd.DataFrame(data=instant_to_annual(rates), index=range(num_steps))
+```
+
+```{python}
+CIR(n_scenarios=10).plot(legend=False, figsize=(18, 8))
+```
+
+```{python}
+def show_cir(r_0=0.03, a=0.5, b=0.03, sigma=0.05, n_scenarios=5):
+    CIR(r_0=r_0, a=a, b=b, sigma=sigma, n_scenarios=n_scenarios).plot(
+        legend=False, figsize=(18, 8)
+    )
+```
+
+```{python}
+# Pywidget time!
+import ipywidgets as widgets
+from IPython.display import display
+```
+
+```{python}
+controls = widgets.interactive(
+    show_cir,
+    r_0=(0, 0.15, 0.01),
+    a=(0, 1, 0.1),
+    b=(0, 0.15, 0.01),
+    sigma=(0, 0.1, 0.01),
+    n_scenarios=(1, 100),
+)
+display(controls)
+```

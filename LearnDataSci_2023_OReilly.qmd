@@ -1,0 +1,98 @@
+---
+title: Learn Data Science textbook examples
+format: html
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.17.3
+  kernelspec:
+    display_name: "Python3 (ipykernel)"
+    language: python
+    name: python3
+---
+
+
+```{python}
+import numpy as np
+
+urn = ["b", "b", "b", "w", "W"]
+```
+
+```{python}
+print(f"Samples 1:", np.random.choice(urn, size=2, replace=False))
+print(f"Samples 2:", np.random.choice(urn, size=2, replace=False))
+```
+
+```{python}
+n = 10_000
+samples = [np.random.choice(urn, size=2, replace=False) for _ in range(n)]
+is_matching = [marble1 == marble2 for marble1, marble2 in samples]
+print(f"Proportion of samples with matching marbles: {np.mean(is_matching)}")
+```
+
+```{python}
+from itertools import combinations
+
+all_samples = ["".join(sample) for sample in combinations("ABCDEFG", 3)]
+print(all_samples)
+print(f"{'----' * 40}")
+print(f"Number of Samples: {len(all_samples)}")
+```
+
+```{python}
+from itertools import permutations
+
+print(["".join(sample) for sample in permutations("ABC")])
+```
+
+Since the list shows that there are 35 unique sets of 3 marbles we could have drawn each of these sets six different ways (as shown above). Since each set of three marbles from the population of seven is equally likely to occur, the chance of any particular sample must be 1/35.
+
+$$
+\mathbb{P}(ABC) = \mathbb{P}(ABD) = \dots \mathbb{P}(EFC) = \frac{1}{35} \\
+\mathbb{P}(A \enspace \text{is in the sample}) = \frac{15}{35} = \frac{3}{7}
+$$
+
+Two other designs for more complex sampling tasks:
+
+1. *Stratified Sampling*: Divide the population into nonoverlapping groups, called *strata* (one group is called a *stratum*), and take a simple random sample from each. This is like having a separate urn for each stratum and drawing marbles from each urn, independently. The strata dont have to be the same size, and we neednt take the same number of marbles from each.
+2. *Cluster Sampling*:  Divide the population into nonoverlapping subgroups, called *clusters*, take a simple random sample of the clusters, and include all of the units in a cluster in the sample. Think of this as a simple random sample from one urn that contains large marbles that are themselves containers of small marbles. (The large marbles neednt have the same number of marbles in them). When opened, the sample of large marbles turns into the sample of small marbles. (Clusters tend to be smaller than strata).
+
+```{python}
+urn = [1, 1, 0, 1, 0, 1, 0]
+sample = np.random.choice(urn, size=3, replace=False)
+print(f"Sample: {sample}")
+print(f"Prop Failures: {sample.mean():.3f}")
+```
+
+```{python}
+samples = [np.random.choice(urn, size=3, replace=False) for _ in range(10_000)]
+prop_failures = [s.mean() for s in samples]
+```
+
+```{python}
+import pandas as pd
+
+unique_els, counts_els = np.unique(prop_failures, return_counts=True)
+pd.DataFrame({
+    "Proportion of Failures": unique_els,
+    "Fraction of Samples": counts_els / 10_000,
+})
+```
+
+```{python}
+simulations_fast = np.random.hypergeometric(
+    ngood=4, nbad=3, nsample=3, size=10_000
+)
+print(simulations_fast)
+```
+
+Provide an exact distribution of the possible values.
+```{python}
+from scipy.stats import hypergeom
+
+num_failures = [0, 1, 2, 3]
+
+```

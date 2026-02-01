@@ -1,0 +1,34 @@
+---
+title: "Expected Value & Returns"
+format:
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+execute:
+  cache: true
+  echo: true
+---
+
+# Expected Value
+
+## From a data science & statistics point of view:
+
+### The Mean of a Distribution
+<!-- (15 math concepts every ds should know ch2 pg42) -->
+
+
+
+## From a financial point of view:
+<!-- https://github.com/romanmichaelpaolucci/Quant-Guild-Library/blob/main/2025%20Video%20Lectures/21.%20Expected%20Stock%20Returns%20Don't%20Exist/ExpectedReturnsDontExist-main/expected_returns_dont_exist.ipynb -->
+
+### Expected stock returns dont exist.
+Models Using Expected Returns
+- Markowitz Model (Portfolio Optimization)
+$$
+max_{\omega} \quad \omega^{T}\mu - \frac{\lambda}{2}\omega^{T}\Sigma \omega \enspace \text{subject to: } \enspace \omega^{T} = 1
+$$
+where:
+- $\mu$ is the vector of expected returns
+- $\Sigma$ is the `covariance matrix`
+- $\omega$ is the vector of portfolio weights
+- $\lambda$ is the risk aversion parameter

@@ -1,0 +1,72 @@
+---
+author: Ernest Orlowski
+engine: jupyter
+jupyter:
+  kernelspec:
+    language: julia
+    name: julia-1.11
+    display_name: julia 1.11.6
+format: html
+---
+# Linear Regression & Extensions
+
+1. Checking Model Assumptions
+    1.1.i. *Assumption I:* A linear relationship between variables. More specifically $\mathbb{E}[Y | X = x]$ is a linear (affine) function oin x.
+    1.1.ii. *Assumption II:* Normally distributed errors around the regression line.
+    1.1.iii. *Assumption III:* Equal variance for the errors around the regression line.
+    1.1.iv. *Assumption IV:* Mutually independent errors.
+    1.1.v. *Assumption V:* No outliers, i.e. the previous assumptions hold for the full dataset.
+
+    While the least squares line passing through a cloud of points can always be found, if any of the four assumptions dont hold, then the validity of the statistical results is questionable. Using anscombes quartet, the four data blocks, each with observations of the from $(x_{1},y_{1}),...,(x_{n},y_{n})$ with
+   - Anscombes quartet datasets
+
+- Regression with categorical variables - No interaction effects
+
+
+# Note: Use [backward_elimination_linear_models.jl]("../../backward_elimination_linear_models.jl")
+
+## Using LASSO for Model Selection
+```{julia}
+using RDatasets, DataFrames, Lasso, LaTeXStrings, Plots, Measures; pyplot()
+
+df = dataset("MASS", "cpus")
+df.Freq = map(x -> 10^9 / x, df.CycT)
+df = df[:, [:Perf, :Freq, :MMin, :MMax, :Cach, :ChMin, :ChMax]]
+X = [df.Freq df.MMin df.MMax df.Cach df.ChMin df.ChMax]
+Y = df.Perf
+```
+
+
+## 4.14 Creating a manual histogram
+```{julia}
+
+using Distributions, Random
+Random.seed!(0)
+
+n = 2000
+data = rand(Normal(), n)
+
+l, m = minimum(data), maximum(data)
+
+Δ = 0.3;
+bins = [(x, x + Δ) for x in 1:Δ:(m - Δ)]
+
+if last(bins)[2] < m
+    push!(bins, (last(bins)[2], m))
+end
+L = length(bins)
+
+inBin(x, j) = first(bins[j]) <= x && x < last(bins[j])
+sizeBin(j) = last(bins[j]) - first(bins[j])
+f(j) = sum([inBin(x, j) for x in data]) / n
+h(x) = sum(f(j) / sizeBin(j) * inBin(x, j) for j in 1:L)
+
+xGrid = -4:0.01:4
+
+histogram(data, normed = true, bins = L, label = "Built-in histogram", c = :blue, la = 0, alpha = 0.6)
+
+plot!(xGrid, h.(xGrid), lw = 3, c = :red, label = "Manual histogram", xlabel = "x", ylabel = "Frequency")
+plot!(xGrid, pdf.(Normal(), xGrid), label = "True PDF", lw = 3, c = :green, xlims = (-4, 4), ylims = (0, 0.5))
+```
+
+
