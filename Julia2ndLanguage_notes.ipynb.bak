@@ -1,0 +1,175 @@
+---
+title: Julia Second Language
+format: html
+engine: Julia
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.17.3
+  kernelspec:
+    display_name: Julia 1.11.6
+    language: julia
+    name: julia-1.11
+---
+
+
+Will begin from Chapter 4, will come back to redo these later. I.e. creating a table of contents, adding links, etc.
+
+# Chapter 4: Julia as a Spreadsheet
+
+```{julia}
+# will be used later
+using Statistics
+
+sales = [
+    ("hawaiian", 'S', 10.5),
+    ("sicilian", 'M', 12.25),
+    ("hawaiian", 'L', 16.5),
+    ("bbq chicken", 'L', 20.75),
+    ("bbq chicken", 'M', 16.75),
+]
+
+name(pizza) = pizza[1]
+portion(pizza) = pizza[2]
+price(pizza) = pizza[3]
+
+issmall(pizza) = portion(pizza) == 'S'
+islarge(pizza) = portion(pizza) == 'L'
+isbbq(pizza) = name(pizza) == "bbq chicken"
+```
+
+```{julia}
+function print_sin_table(increment, max_angle)
+    # println("  angle |   sin(angle)")
+    # println("------- | -------------")
+    # for angle in 0:increment:max_angle
+    #     @printf("%7d | %13.6f\n", angle, sin(deg2rad(angle)))
+    # end
+    angle = 0
+    while angle <= max_angle
+        rad = deg2rad(angle)
+        x = sin(rad)
+        println(x)
+        # angle = angle + increment
+        angle += increment
+    end
+end
+```
+
+```{julia}
+degs = [0, 15, 30, 45, 60];
+rads = map(deg2rad, degs)
+```
+
+`map` is known as a `higher-order function`. These are functions that take other functions 
+as arguments and/or return functions. It essentially takes a function $f$ as the first argument and applies it to 
+every element in a collection $xs$, producing a new collection, $ys$ as output.
+```julia
+ys = map(f, xs)
+```
+
+The second argument, `xs`, doesnt need to be an actual array. It can be anything that can iterate over and get multiple elements; thus you can also
+use a range object.
+
+```{julia}
+map(deg2rad, 0:15:90)
+```
+
+Or even combine them to create a sine table:
+
+```{julia}
+map(sin, map(deg2rad, 0:15:90))
+```
+
+This isnt the most efficient way to go about it though, as it creates an new, intermediate, array that is only used once (but for every call to `map`). A more efficient way is to use an anonymous function:
+```julia
+map(x -> sin(deg2rad(x)), 0:15:90)
+```
+This is more memory efficient.
+Another solution is to preallocate an array of the same size as the output and use this array in repeat mappings.
+The mutating `map!` function allows that. It writes its outputs straight to the array given as a second argument. The third argument
+is in the input, which wont be modified by the `map!` function.
+However, if the input is of the same type and length as required by the output, then you can reuse the input argument as your output argument:
+
+
+```{julia}
+result = zeros(Float64, length(0:15:90))
+map!(deg2rad, result, 0:15:90)
+map!(sin, result, result)  # The input and destination array must have equal length!
+```
+
+This isnt the most elegant solution, manipulating function calls are best avoided, as they make analyzing data flow much more difficult.
+Best practice is to collect all transformations into one function, which reduces the number of memory allocations the code makes and is often easier to read.
+
+```{julia}
+degsin(deg) = sin(deg2rad(deg))
+map(degsin, 0:15:90)
+```
+
+```{julia}
+# as a multiline function:
+function degsin(deg)
+    sin(deg2rad(deg))
+end
+map(degsin, 0:15:90)
+```
+
+```{julia}
+# knock off version of `map` called `transform`.
+function transform(fun, xs)
+    ys = []
+    for x in xs
+        push!(ys, fun(x))
+    end
+    ys
+end
+```
+
+```{julia}
+# quick tutorial on Chars
+x = Int8(65)
+```
+
+```{julia}
+ch = Char(65)
+```
+
+```{julia}
+ch = Char(66)
+```
+
+```{julia}
+'A'
+```
+
+```{julia}
+Int8('A)
+```
+
+```{julia}
+'A' + 'B'
+```
+
+```{julia}
+'A' + 4
+```
+
+```{julia}
+chars = ['H', 'E', 'L', 'L']
+```
+
+```{julia}
+collect(chars)
+```
+
+```{julia}
+join(chars)
+```
+
+```{julia}
+collect("HELL")
+```
+

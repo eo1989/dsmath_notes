@@ -1,0 +1,22 @@
+---
+author: "Ernest Orlowski"
+title: "Julia vs Python: A Comparative Analysis"
+date: "01-31-2026"
+julia:
+  exeflags:
+    - --project=@.
+engine: julia
+---
+
+# Where Julia Outshines Python
+
+## A Technical Deep-Dive into Julia's Superior Performance
+
+## Table of Contents
+The two languages will be compared across several dimensions, including:
+1. Raw Computational Speed
+2. Multiple Dispatch Magi
+3. Native Parallelism & Concurrency
+4. Mathematical Notation & Elegance
+5. Metaprogramming & Code Generation
+6. Type System & Compiler Optimization

@@ -1,0 +1,247 @@
+---
+title: "Reflected Ornstein-Uhlenbeck ROU Process"
+format: html
+author: Ernest Orlowski
+---
+
+# Reflected Ornstein-Uhlenbeck (ROU) Process
+
+- Numerical Simulation (SDE)
+- Expected Time to reach a level
+- `Fokker-Plank` equation:
+  - `Chang-Cooper` scheme
+- Stationary `Fokker-Plank`
+- Parameter Estimation (MLE)
+
+
+```{python}
+import matplotlib.pyplot as plt
+from matplotlib import cm
+import numpy as np
+import scipy as sc
+import scipy.stats as st
+import scipy.sparse as sp
+```
+
+## ROU SDE
+
+The ROU process (see ref[1]) is a basic Ornstein-Uhlenbeck (OU) process (see ref[2]) with a reflection barrier at zero, to prevent negative values.
+The ROU process $X = {X_{t}: 0 ≤ t ≤ T}$ is formally described by the following stochastic differential equation:
+$$
+dX_{t} = -\kappa X_{t}dt + \sigma dW_{t} + dL_{t},\enspace \text{with}\enspace X_{0} = 0,
+$$
+where:
+- $\kappa$ is the reversion to zero coefficient
+- $\sigma$ is the diffusion coefficient
+The process $W = {W_{t}:0≤ t ≤ T}$ is a standard Brownian motion and the process $L = {L_{t}:0≤ t ≤ T}$ is a minimal non-decreasing process which makes $X_{t} ≥ 0 \enspace ∀ \enspace t ≥ 0$, also known as the local time process.
+
+## Simulation
+
+In order to simulate the ROU process we need to discretize the time interval $[0, T]$ in $N$ time steps of size $\Delta t$. We calculate the value of the discretized ROU process $X_{n}$ for $n ∈ \mathbf{N}$ and $n ≤ \mathbf{N}$ using the recursive relation:
+$$
+X_{n + 1} = \text{max}({e^{-\kappa \Delta t}X_{n} + \bar\sigma \epsilon_{n}, 0})
+$$
+where: $\barσ := \sqrt{\frac{\sigma^{2}}{2\kappa}(1 - e^{-2\kappa \Delta t})} \enspace \text{and}  \enspace \epsilon_{n} \sim \mathbf{N}(0, 1)$ is a standard normal random variable.
+
+Below simulates a few paths:
+```{python}
+#| freeze: true
+%%time
+np.random.seed(42)
+
+N = 15_000      # time steps
+paths = 5_000   # num of steps
+T = 1
+T_vec, dt = np.linspace(0, T, N, retstep=True)
+
+kappa = 5
+theta = 0       # lets keep a theta, but set to zero
+sigma = 4
+std_asy = np.sqrt(sigma**2 / (2*kappa))  # asymptotic std for OU
+
+X0 = 0
+X = np.zeros((N, paths))
+X[0, :] = X0
+std_dt = np.sqrt(sigma**2 / (2*kappa) * (1 - np.exp(-2*kappa*dt)))
+W = st.norm.rvs(loc = 0, scale = std_dt, size = (N - 1, paths))
+
+exp_ = np.exp(-kappa * dt)
+for t in range(N - 1):
+    X[t + 1, :] = theta + exp_ * (X[t, :] - theta) + W[t, :]
+    X[t + 1, :] = np.where(X[t + 1, :] > 0.0, X[t + 1, :], 0.0)
+
+X_T = X[-1, :]  # values of X at time T
+X_1 = X[:, 0]   # a single path
+```
+
+Mean and standard deviation computed at time $T$.
+```{python}
+mu = X_T.mean()
+std = X_T.std()
+
+print(f"Mean = {mu:.6f}, Std = {std:.6f}")
+```
+```{python}
+N_processes = 2     # num of processes
+x = np.linspace(X_T.min(), X_T.max(), 100)
+pdf_fitted = st.norm.pdf(x, loc = mu, scale = std)
+
+fig = plt.figure(figsize = (16, 5))
+ax1 = fig.add_subplot(121)
+ax2 = fig.add_subplot(122)
+
+ax1.plot(T_vec, X[:, :N_processes], linewidth = 0.5)
+ax1.plot(T_vec, (theta + std_asy) * np.ones_like(T_vec), label = "1 asymptotic std dev", color = "black")
+ax1.plot(T_vec, (theta + 3 * std_asy) * np.ones_like(T_vec), label = "3 asymptotic std dev", color = "blue")
+ax1.plot(T_vec, theta * np.ones_like(T_vec), label = "Long term mean")
+ax1.legend(loc = "upper right")
+ax1.set_title(f"{N_processes} OU Proccesses")
+ax1.set_xlabel("T")
+
+ax2.plot(x, pdf_fitted, color = "r", label = "Normal Density")
+ax2.hist(X_T, density = True, bins = 50, facecolor = "LightBlue", label = "Frequency of X(T)")
+ax2.legend()
+ax2.set_title("Histogram vs Normal Distribution")
+ax2.set_xlabel("X(T)")
+plt.show()
+```
+
+## Expected time to reach a level
+
+### Monte Carlo Approach
+
+Now lets compute the expected time to reach 1 std_asy using MC, not 3 std_asy.
+The reason for this is that the simulation rarely reaches 3 std_asy, and we dont want to have a zero. Having a zero means it touches the level at time zero, which is incorrect.
+
+```{python}
+T_to_asy = np.argmax(X >= 1 * std_asy, axis=0) * dt  # first exit time
+print(
+  f"Are there paths that never touch the line? {(T_to_asy == 0).any()}\n",
+  f"The expected time is {T_to_asy.mean()} with standard error {st.sem(T_to_asy)}"
+  )
+```
+
+### ODE Approach
+
+The expected time $U$ is the solution of the following differential equation (see [1]):
+
+$-\kappa x \frac{dU}{dx} + \frac{1}{2}\sigma^{2} \frac{d^{2}U}{dx^{2}} = -1$
+$U^\prime(0) = 0 \enspace \text{and} \enspace U(x_{max}) = 0$
+
+with mixed boundary conditions.
+Here $x_{max} = \frac{\sigma^{2}}{2\kappa}$ corresponds to the asymptotic standard deviation of the OU process.
+
+### Discretization
+
+The domain is discretized in the set of points $x_{0}, ..., x_{N}$.
+This is a boundary value problem, what can be solved by a finite difference method. The discretization scheme is:
+$$
+-\kappa x_{i} \frac{U_{i} - U_{i - 1}}{\Delta x} + \frac{1}{2}\sigma^{2}\frac{U_{i + 1} + U_{i - 1} - 2U_{i}}{\Delta x^{2}} + 1 = 0
+$$
+where we discretized the first order derivative with backward discretization $U^′(x_{i}) = \frac{U_{i} - U_{i - 1}}{Δ x}$.
+It follows that at $x_{0} = 0$ the derivative $U^′(0) = 0$ implies: $U_{0} = U_{-1}$
+
+It also holds that $x_{N} = x_{max}$, and $U(x_{N}) := U_{N} = 0$.
+We can also rewrite the equation above as:
+$$
+\underbrace{\bigl(\frac{\kappa x_{i}}{\Delta x} + \frac{1}{2} \frac{\sigma^{2}}{\Delta x^{2}}\bigr)}_{a_{i}} U_{i - 1} + \underbrace{\bigl(\frac{-\kappa x_{i}}{\Delta x} - \frac{\sigma^{2}}{\Delta x^{2}}\bigr)}_{b_{i}} U_{i} + \underbrace{\bigl(\frac{1}{2}\frac{\sigma^{2}}{\Delta x^{2}}\bigr)}_{c_{i}} U_{i + 1} = -1 \enspace \text{for} \enspace 0 \le i \lt N - 1
+$$
+
+For $i = 0$ (remember that $x_{0} = 0$):
+$$
+- \frac{1}{2} \frac{\sigma^{2}}{\Delta x^{2}} U_{0} + \frac{1}{2} \frac{\sigma^{2}}{\Delta x^{2}} U_{1} = -1
+$$
+
+and for $i = N - 1$:
+$$
+\alpha_{N-1} U_{N - 2} + b_{N-1}U_{N-1} + c_{N - 1} \underbrace{U_{N}}_{=0} = -1
+$$
+
+That in matrix form becomes: $\mathcal{D}U = -1$
+where $\mathcal{D}$ is the usual $N×N$ tridiagonal matrix.
+```{python}
+Nspace = 500_000  # space steps
+x_max = 1 * std_asy
+x_0 = 0
+x, dx = np.linspace(x_0, x_max, Nspace, retstep=True)  # space discretization
+
+U = np.zeros(Nspace)             # grid initialization
+consterm = -np.ones(Nspace - 1)  # -1
+
+# construction of the tri-diagonal matrix D
+sig2_dx = (sigma * sigma) / (dx * dx)
+a = kappa * x[:-1] / dx + 0.5 * sig2_dx
+b = -kappa * x[:-1] / dx - sig2_dx
+c = 0.5 * sig2_dx * np.ones_like(a)
+
+b[0] = -0.5 * sig2_dx            # term added from BC at x0
+
+# aa = a[1:]
+# cc = c[:-1]                      # upper and lower diagonals
+# D = sp.diags([aa, b, cc], [-1, 0, 1], shape=(Nspace - 1, Nspace - 1)).tocsc()  # matrix D
+
+from scipy.linalg import solve_banded
+
+n = Nspace - 1
+
+# diagonals (same)
+lower = a[1:]    # length n - 1
+main  = b        # length n
+upper = c[:-1]   # length n - 1
+
+# banded matrix
+ab = np.zeros((3, n))
+ab[0, 1:]  = upper
+ab[1, :]   = main
+ab[2, :-1] = lower
+
+```
+
+```{python}
+# from scipy.sparse.linalg import spsolve
+# U[:-1] = spsolve(D, consterm)
+
+rhs = consterm   # length n, all -1
+
+U[:-1] = solve_banded((1, 1), ab, rhs)
+**U**[-1] = 0.0
+
+fig = plt.figure(figsize=(8, 5))
+plt.title("Expected time to reach std_asy as func of the starting pt.")
+plt.plot(x, U)
+plt.xlabel("x")
+plt.ylabel("Expected Time")
+```
+
+Given the matrix is strictly tridiagonal and `Nspace = 500_000`, it would be far more beneeficial, with significantly less overhead to use `scipy.linalg.solve_banded`. This is due to `spsolve` performing LU factorization. Even for tridiagonal matrices it creates much overhead for ~500k unknowns.
+A tridiagonal method (`Thomas algorithm`) is **O(n)** time and **O(n)** memory and is the right tool for this structure.
+
+```{python}
+# from scipy.linalg import solve_banded
+# n = Nspace - 1
+
+# diagonals (same)
+# lower = a[1:]    # length n - 1
+# main  = b        # length n
+# upper = c[:-1]   # length n - 1
+
+# banded matrix
+# ab = np.zeros((3, n))
+# ab[0, 1:]  = upper
+# ab[1, :]   = main
+# ab[2, :-1] = lower
+
+# rhs = consterm   # length n, all -1
+
+# U[:-1] = solve_banded((1, 1), ab, rhs)
+# U[-1] = 0.0
+
+print(f"Expected time to reach 1 std_asy starting from zero: {U[0]:4g}")
+```
+
+### Fokker-Plank Equation
+
+The distribution of $X_{t}$ can be obtained by solving the [Fokker-Plan](https://en.wikipedia.org/wiki/Fokker–Planck_equation) equation.
+$$
+
+$$

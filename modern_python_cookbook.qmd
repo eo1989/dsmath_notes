@@ -7,13 +7,170 @@ jupyter: jupyterlab_python3
 
 # Modern Python Cookbook - 130+ Updated Recipes For Modern Python 3.12 With New Techniques & Tools (Py312, 3E, 2024, Packt, SLott)
 
+## Ch 3 - Function definitions
+
+### 3.1 - Function Parameters & Type Hints
+
+There are a variety of ways to encode values, be it strings, integers, or tuples. Here are a few examples:
+- A string of six hexadecimal characters with a leading `#`, "#C62D42",
+- A string of six hexadecimal characters, "C62D42",
+- A numeric value (byte), 0xC62D42,
+- A three-tuple of R, G, B integers, (162, 45, 66),
+
+
+To split integer values, split the integer into three separate values using the `>>` and `&` operators. This is the core computation for converting a single integer value, `hx_int`, into three separate `r, g, b` values:
+
+```{python}
+r, g, b =  (hx_int >> 16) & 0xFF, (hx_int >> 8) & 0xFF, hx_int & 0xFF
+```
+> NOTE
+> A single RGB integer has three separate values that are combined via bit shifting. The red value was shifted left 16bits. Tho extract this component, the value is shifted right 16bits using the `>>` operator. The `&` operator applies `0xFF` as a "mask" to save only 8bits of a potentially larger number. To extract the green component, shift right 8bits. The blue value occupies the least-significant 8bits.
+
+Function without type hints:
+```{python}
+def hex2rgb_1(hx_int):
+    if isinstance(hx_int, str):
+        if hx_int[0] == "#":
+            hx_int = int(hx_int[1:], 16)
+        else:
+            hx_int = int(hx_int, 16)
+
+    r, g, b = (hx_int >> 16) & 0xFF, (hx_int >> 8) & 0xFF, hx_int & 0xFF
+    return r, g, b
+```
+
+Function with type hints added:
+```{python}
+def hex2rgb_1(hx_int: int | str) -> tuple[int, int, int]:
+    if isinstance(hx_int, str):
+        if hx_int[0] == "#":
+            hx_int = int(hx_int[1:], 16)
+        else:
+            hx_int = int(hx_int, 16)
+
+    r, g, b = (hx_int >> 16) & 0xFF, (hx_int >> 8) & 0xFF, hx_int & 0xFF
+    return r, g, b
+```
+
+Hue-Saturation-Lightness (HSL) values are used to compute complementary colors. With an additional algorithm required to convert from HSL back to RGB values for (example) a webpage.
+
+Starting by roughing out a definition of a function (w/ a stub definition) to begin:
+```{python}
+def rgb_to_hsl_1(rgb: tuple[int, int, int]) -> tuple[float, float, float]:
+    ...
+
+def hsl_comp_t(hsl: tuple[float, float, float]) -> tuple[float, float, float]:
+    ...
+
+def rgb_to_hsl_t(rgb: tuple[float, float, float]) -> tuple[int, int, int]:
+    ...
+```
+Note how some type hints are repeated in slightly different contexts. This suggests you should create a separate named type to avoid repetition of the details.
+```{python}
+from typing import TypeAlias
+
+
+RGB_a: TypeAlias = tuple[int, int, int]
+HSL_a: TypeAlias = tuple[float, float, float]
+
+def rgb_to_hsl(color: RGB_a) -> HSL_a:
+    ...
+
+def hsl_complement(color: HSL_a) -> HSL_a:
+    ...
+
+def hsl_to_rgb(color: HSL_a) -> RGB_a:
+    ...
+```
+This overview of the various functions can be helpful for assuring that each function uses data in a way that's consistent with other functions. But you can do better, a more descriptive set of names can be given using `NamedTuples` (dataclasses could also work, and/or with enums).
+```{python}
+from typing import NamedTuple
+
+class RGB(NamedTuple):
+
+    red: int
+    green: int
+    blue: int
+```
+
+### 3.2 Designing Functions with Optional Parameters
+
+There are two approaches to designing a function with optional parameters:
+- **General to particular**: Start by designing the most general solution and provide defaults for the most common case.
+- **Particular to general**: Start by designing several related functions. Then merge them into one general function that covers all of the cases, singling out one of the original functions to be the default behavior.
+
+#### Particular to general design
+We will be using slightly different function names as the function evolves in this example. Itll simplify unit testing the different versions and make comparing them easier.
+
+1. Create the *Craps* game (as its the simplest) with one game function.
+```{python}
+import random
+
+def die() -> int:
+    """Roll a random value between 1 and 6 for a six-sided die."""
+    return random.randint(1, 6)
+
+def craps() -> tuple[int, int]:
+    return (die(), die())
+```
+
+2. Create the *Zonk* game with one function.
+```{python}
+def zonk() -> tuple[int, ...]:
+    # return tuple(die() for x in range(6))
+    return tuple(die() for _ in range(6))
+```
+Using `x` wouldve been more readable, but `_` is more Pythonic in the sense that it is often used when a variable name is required, but never used.
+
+3. Locate common features in the `craps()` and `zonk()` functions. In this case, factor the design of the `craps()` function to follow the pattern set by `zonk()`. Rather than building exactly two evaluations of the `die()` function, you could introduce a generator expression based on `range(2)` that will evaluate the die() function twice:
+```{python}
+def craps_v2() -> tuple[int, ...]:
+    # return tuple(die() for x in range(n))
+    return tuple(die() for _ in range(2))
+
+```
+
+Merge the two functions. This will often involve exposing a variable that had previously been a literal value:
+
+```{python}
+def dice_v2(n: int) -> tuple[int, ...]:
+    return tuple(die() for _ in range(n))
+```
+This now provides a general function that covers the needs of both the *Craps* & *Zonk* games.
+
+4. Identify the most common use case and make this the default value for any parameters that were introduced. If the most common simulation was *Craps*, you could do something like this:
+```{python}
+def dice_v3(n: int = 2) -> tuple[int, ...]:
+    return tuple(die() for _ in range(n))
+```
+
+Here you can use `dice_v3()` for the *Craps* game. Youll need to use the expression `dice_v3(6)` for the first roll of the *Zonk* game.
+
+5. Check the type hints to be sure they describe the parameters and return values. In this case, we have one paramter with an integer value, and the return is a tuple of integers, described by `tuple[int, ...]`.
+
+#### General to particular design
+
+First identify all the needs. It can be difficult to foresee all the alternatives, making this more challenging. Often you do this first introducing variables to the requirements:
+1. Summarizing the requirements for dice-rolling. Maybe start a list like this:
+   - *Craps*: Two dice
+   - First roll in *Zonk*: Six dice
+   - Subsequent rolls in *Zonk*: One to six dice
+2. Rewriting the requirements with an explicit parameter in place of any literal value. Replacing all of the numbers with a parameter, $n$. This will take on any value in the range $1 ≤ n ≤ 6$. Will want to be sure youve properly parameterized each of the various functions.
+3. Write the functino that fits the general pattern:
+```{python}
+
+```
+
+
+
 ## Ch 12 - Graphics & Visualization with Jupyter Lab
 
 Visualization with correlation coefficients and linear regression model. The
 imports required to use Pydantic to load json-formatted data.
-
-
 ### Anscombes Quartet
+
+#### 12.1-3
+
 
 ```{python}
 import json
@@ -32,8 +189,7 @@ with source_path.open() as source_file:
 ```{python}
 all_data[0]["data"]
 ```
-
-#### Pydantic Model
+- Pydantic Model
 
 ```{python}
 class Pair(BaseModel):
@@ -44,6 +200,29 @@ class Pair(BaseModel):
 class Series(BaseModel):
     series: str
     data: list[Pair]
+
+    @property
+    def x(self) -> list[float]:
+        """The x property."""
+        return [p.x for p in self.data]
+
+    @property
+    def y(self) -> list[float]:
+        """The y property."""
+        return [p.y for p in self.data]
+```
+
+Adding these properties permits some light simplifications in `plt.scatter()`.
+The overall figure can be created as such.
+
+```{python}
+plt.figure(layout="tight")
+for n, series in enumerate(quartet.values(), start=1):
+    title = f"Series {series.series}"
+    plt.subplot(2, 2, n)
+    plt.scatter(series.x, series.y)
+    plt.title(title)
+    plt.show()
 ```
 
 Reading the cleaned data.
@@ -62,11 +241,166 @@ The value of `clean_data` contains a list of four individual `Series` objects.
 An expression like `quartet['I']` will reveal one of the series.
 
 ```{python}
-x = [p.x for p in quartet["I"].data]
+# x = [p.x for p in quartet["I"].data]
 
-y = [p.y for p in quartet["I"].data]
+# y = [p.y for p in quartet["I"].data]
 
-plt.scatter(x, y)
-plt.title(f"Series {quartet['I'].series}")
+# plt.scatter(x, y)
+# plt.title(f"Series {quartet['I'].series}")
+# plt.show()
+```
+
+#### 12.4.3 - 4.4
+
+```{python}
+import json
+import statistics as stats
+from pathlib import Path
+
+from pydantic import BaseModel
+
+
+class Pair(BaseModel):
+    x: float
+    y: float
+
+
+class Series(BaseModel):
+    series: str
+    data: list[Pair]
+
+    @property
+    def x(self) -> list[float]:
+        """The x property."""
+        return [p.x for p in self.data]
+
+    @property
+    def y(self) -> list[float]:
+        """The y property."""
+        return [p.y for p in self.data]
+
+    @property
+    def correlation(self) -> float:
+        return stats.correlation(self.x, self.y)
+
+    @property
+    def regression(self) -> tuple[float, float]:
+        return stats.linear_regression(self.x, self.y)
+```
+
+Checking to make sure the class instantiation works!
+```{python}
+print(f"{quartet['I'].correlation:.4f}")
+```
+
+```{python}
+r = quartet["I"].regression
+f"y = {r.slope:.1f}*x + {r.intercept:.1f}"
+```
+
+To create professional graphs add a line to the cell to create a collection of
+axes for displaying four subplots (like before) within the overall figure. The
+`subplot_moasiac` function provides a sophisticated layout capability we can
+take advantage of. The list-of-lists structure will create a grid that's square.
+The axes will be assigned to a dictionary, `ax_dict` with four distinct keys.
+Best to choose keys that match the series names and position them in rows and
+columns of the resulting figure, using lists of lists.
+```{python}
+fig = plt.figure(layout="tight")
+ax_dict = fig.subplot_mosaic(
+    [
+        ["I", "II"],
+        ["III", "IV"],
+    ],
+)
+
+for name, ax in ax_dict.items():
+    series = quartet[name]
+    ax.scatter(series.x, series.y)
+    ax.set_title(f"Series {name}")
+    lr = series.regression
+    eq1 = rf"$r = {series.correlation:.3f}$"
+    eq2 = rf"$Y = {lr.slope:.1f} \times X + {lr.intercept:.2f}$"
+    ax.text(
+        0.95,
+        0.05,
+        f"{eq1}\n{eq2}",
+        fontfamily="sans-serif",
+        horizontalalignment="right",
+        verticalalignment="bottom",
+        transform=ax.transAxes,
+    )
+    ax.axline((0, lr.intercept), slope=lr.slope)
+
 plt.show()
+```
+
+#### 12.5.x
+
+[!](Best to be shown in a proper notebook!)
+
+```{python}
+from IPython.display import Markdown, display
+
+m = Markdown(rf"""
+We can see that $r = {quartet["I"].correlation:.2f}$; this is a strong
+correlation.
+
+
+This leads to a linear regression result with $y = {r.slope:.1f}
+\times X + {r.intercept:.1f}$ as the best fit
+
+for this collection of samples.
+
+Interestingly, this is true for all four series in spite of the dramatically
+distinct scatter plots.
+
+""")
+display(m)
+```
+
+#### 12.6.x
+
+Unit testing 'literate code' and notebooks
+
+```{python}
+def ingest(source: Path) -> dict[str, Series]:
+    """
+    doctest example
+    """
+
+    with source.open() as source_file:
+        json_documnet = json.load(source_file)
+        source_data = (Series.model_validate(s) for s in json_documnet)
+        quartet = {s.series: s for s in source_data}
+
+    return quartet
+```
+
+```{python}
+sourse = Path.cwd().parent.parent / "Downloads" / "anscombe.json"
+quartet = ingest(sourse)
+```
+
+```{python}
+assert len(quartet) == 4, f"read {len(quartet)} series"
+
+assert list(quartet.keys()) == ["I", "II", "III", "IV"], (
+    f"keys were {list(quartet.keys())}"
+)
+```
+
+
+```{python}
+from math import isclose
+
+test = Series(
+    series="test", data=[Pair(x=2, y=4), Pair(x=3, y=6), Pair(x=5, y=10)]
+)
+
+assert isclose(test.correlation, 1.0)
+
+assert isclose(test.regression.slope, 2.0)
+
+assert isclose(test.regression.intercept, 0.0)
 ```
