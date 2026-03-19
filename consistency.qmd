@@ -7,7 +7,7 @@ jupyter: python3
 title: Consistency of Sample Mean
 ---
 
-Assume that we have a random sample of size $n$ from a population with $N(\mu,\sigma^{2})$. Lets investigate how the probability 
+Assume that we have a random sample of size $n$ from a population with $N(\mu,\sigma^{2})$. Lets investigate how the probability
 $\text{Pr}(\vert \bar X_{n} - \mu \vert > \epsilon)$ changes with respect to $n$ and $\epsilon$ and, when $\sigma^{2} = 4$.
 ::: {.notes}
 That due to symmetry of normal distribution,
@@ -25,5 +25,5 @@ from IPython.display import Markdown, display
 
 ```{python}
 def xbar_consistency(eps, col):
-    
+
 ```

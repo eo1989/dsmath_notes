@@ -1,0 +1,110 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.19.1
+  kernelspec:
+    display_name: Julia 1.12.4
+    language: julia
+    name: julia-1.12
+---
+
+```{julia}
+using CSV, DataFrames, MLBase, Plots, StatsBase, Turing
+using StatsFuns: logistic
+using KernelDensity
+using DataFramesMeta
+# using KernelDensity, Statistics
+# using DataFramesMeta, Distributions, Random, GLM
+import Statistics as st
+# import Distributions as dt
+# import Random as rnd
+# import GLM as glm
+using Distributions, Random, GLM
+```
+
+```{julia}
+_source = "/Users/eo/Downloads/WVS.csv"
+df = CSV.read(_source, DataFrame)
+```
+
+```{julia}
+show(describe(df); truncate=12)
+
+df[1:5, :]
+```
+
+```{julia}
+# select!(df,)
+```
+
+```{julia}
+# deleteat!(:df, :Column1)
+# y = convert(Array, df[!, :y])
+# X = convert(Matrix, df[setdiff(names(df), [:y])]);
+y = Vector(df[!, :y])
+X = Matrix(df[!, Not(:y)])
+println(typeof(X))
+println(typeof(y))
+println(countmap(y))
+```
+
+Defining Ordered Logistic Distribution
+
+```{julia}
+struct OrderedLogistic{T1,T2} <: DiscreteUnivariateDistribution
+    ŋ::T1
+    cutpoints::Vector{T2}
+end
+
+function Distributions.logpdf(d::OrderedLogistic, k::Int)
+    Κ = length(d.cutpoints) + 1
+    c = d.cutpoints
+
+    if k == 1
+        logp = log(logistic(c[k] - d.ŋ))
+    elseif k < Κ
+        logp = log(logistic(c[k] - d.ŋ) - logistic(c[k-1] - d.ŋ))
+    else
+        logp = log(1 - logistic(c[k-1] - d.ŋ))
+    end
+end
+```
+
+```{julia}
+# Turing model
+
+@model m(X, y) = begin
+    D = size(X, 2)
+
+    # priors
+    σ ~ Truncated(Normal(0, 1), 0, Inf)
+
+    c1 ~ Normal(0, 20)
+
+    log_diff_c ~ Normal(0, 2)
+    c2 = c1 + exp(log_diff_c)
+    c = [c1, c2]
+
+    β ~ MvNormal(zeros(D), σ * ones(D))
+
+    lp = X * β
+
+    # likelihood
+    for i = 1:length(y)
+        y[i] ~ OrderedLogistic(lp[i], c)
+    end
+end
+```
+
+```{julia}
+steps = 10_000
+chain = sample(m(X, y), NUTS(steps, 0.65));
+
+
+show(chain)
+```
+

@@ -1,0 +1,13 @@
+---
+author: Ernest Orlowski
+engine: julia
+title: Temporary
+---
+
+# Random variable
+
+Definition:
+
+$$
+
+$$

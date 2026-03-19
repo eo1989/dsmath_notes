@@ -1,0 +1,291 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.19.1
+  kernelspec:
+    display_name: Julia 1.12
+    language: julia
+    name: julia-1.12
+---
+
+```{julia}
+abstract type Circle end
+
+struct FloatingCircle <: Circle
+    r::Real
+end
+```
+
+```{julia}
+supertypes(FloatingCircle)
+```
+
+```{julia}
+struct PositionedCircle <: Circle
+    x::Real
+    y::Real
+    r::Real
+end
+```
+
+```{julia}
+subtypes(Circle)
+```
+
+```{julia}
+function circle_area(c::Circle)
+    return π * c.r^2
+end
+```
+
+The `circle_area()` functions signature demands that the type of its argument is a subtype of `Circle`. If it is, it will have a radius, which, by convention, we call `r` in all our circular composite types:
+
+```{julia}
+c1 = FloatingCircle(1)
+```
+
+```{julia}
+c1.r
+```
+
+```{julia}
+circle_area(c1)
+```
+
+```{julia}
+c2 = PositionedCircle(2, 2, 1)
+```
+
+```{julia}
+c2.x, c2.y
+```
+
+```{julia}
+c2.r
+```
+
+```{julia}
+circle_area(c2)
+```
+
+```{julia}
+circle_area(21)
+```
+
+One more function to this geometry example: a routine that takes two circles and tells us if the second circle is entirely within the first.
+To do that the function will calculate the distance between the centers of the two circles using their x-, and y-coordinates. Then it will check whether one lies inside the other by referring to their radii.
+The concept of a circle being "inside" another makes sense only if we can say where the circles are, so the new function accepts only `PositionedCircle` types and will have only one method.
+
+```{julia}
+function is_inside(c1::PositionedCircle, c2::PositionedCircle)
+    d = sqrt((c2.x - c1.x)^2 + (c2.y - c1.y)^2)
+    return d + c2.r < c1.r  # true if c2 is inside c2
+end
+```
+
+```{julia}
+a = PositionedCircle(2, 2, 2)
+println(a)
+b = PositionedCircle(1, 1, 0.5)
+println(b)
+```
+
+```{julia}
+is_inside(a, b)
+```
+
+```{julia}
+c = PositionedCircle(3, 3, 1)
+println(c)
+```
+
+```{julia}
+is_inside(a, c)
+```
+
+```{julia}
+using Luxor
+```
+
+```{julia}
+@pdf begin
+    origin(Point(30, 30))
+    scale(100, 100)
+    fontsize(0.32)
+    fontface("Liberation Sans")
+    setdash("solid")
+    setcolor("black")
+    circle(Point(2, 2), 2, :stroke)
+    text("a", Point(1, 3))
+    setcolor("blue")
+    circle(Point(1, 1), 0.5, :stroke)
+    text("b", Point(1, 1))
+    setcolor("green")
+    circle(Point(3, 3), 1, :stroke)
+    text("c", Point(3, 3))
+end 500 500 "circles_jl.pdf"
+```
+
+How to constrain the allowed values passed to the constructors?
+
+```{julia}
+struct ReasonableCircle <: Circle
+    r::Real
+    ReasonableCircle(r) =
+        if r >= 0
+            new(r)
+        else
+            @error("It's not reasonable to make a circle with a negative radius.")
+        end
+end
+```
+
+```{julia}
+ReasonableCircle(-12)
+```
+
+```{julia}
+ReasonableCircle(12).r
+```
+
+As with functions, constraints on the values passed as arguments must be enforced in the body. The method inside the body is called the *inner constructor* (ReasonableCircle(r) = ...), the other constructors used up to now are called *outer constructors*.
+
+Composite types in Julia arent classes; *Julia as no classes* and, obviously, no class inheritance. In an OO language, the next step would be to define methods as part of the class: the nouns and verbs are bound together. The more flexible multiple dispatch paradigm decouples nouns and verbs. Julia coders are free to write methods that act upon any combination of types and create new types at will, without friction.
+
+The default method for defining composite types leaves a bit to be desired. Its main deficiency is that the constructor it creates requires the coder to remember the order in which a type's fields appear in its definition. The `Base.@kwdef` macro improves on this limitation by creating constructors that we can use with field names. For repeated use, it's convenient to import this macro and rename it: `import Base.@kwdef as @kwdef`. NOTE: As of 1.9 this macro is part of Base so no need to import it. Just use it as a regular macro directly.
+
+```{julia}
+@kwdef struct Ellipse
+    axis1::Real = 1
+    axis2::Real = 1
+end
+```
+
+This definition shows the second convenient feature of `@kwdef`: the ability to assign default valuesfor fields. There is also the option to define a mutble struct with `@kwdef mutable struct ... end`.
+
+```{julia}
+oval = Ellipse(axis2=2.6)
+```
+
+```{julia}
+oval.axis1, oval.axis2
+```
+
+This example shows how you can supply a subset of the type's keyword arguments, and the ones we omit will get their default arguments. As with functions, any keywrod argument without a default in the type definition must be suplied using the constructor. Also, similarly with functions, we may not mix positional and keyword forms:
+
+```{julia}
+Ellipse(2, 3)
+```
+
+```{julia}
+Ellipse(2, axis2=3)
+```
+
+As there is no drawback to using `@kwdef` when defining composite types, it's convenient to use it routinely.
+
+Because of the way Julia's JIT compiler works with the type system, computing with user-defined types is as fast as using native types. We can work at a higher level of abstraction without sacrificing performance, creating a set of types that naturally conform to the objects in our problem, without any compormise in performance.
+
+### Performance Tips
+
+Speed and efficiency are often of great concern for scientific programming. While Julia generally produces performant code without requiring extreme expertise or knowledge of internals, good performance does sometimes depend on awareness of the compilation process.
+
+### *Vanquish Type Instability*
+
+*Type Instability* is perhaps the single most important performane-related concept in Julia. Its central principle is that the return values of functions should have types that we can predict based on the types of the arguments supplied to the function. The returned type should not depend on the *values* of the arguemnts. A secondary issue is that the local variables used within afunction should not change type.
+Example: Suppose we want to have a function for dividing two numbers that would return $0$ when the denominator is $0$, rather than $\infty$ or `NaN`. A naive implementation might look like this:
+
+```{julia}
+function safe_divide(a, b)
+    if b == 0
+        return 0
+    else
+        return a / b
+    end
+end
+```
+
+```{julia}
+safe_divide(1, 2)
+```
+
+```{julia}
+safe_divide(1, 0)
+```
+
+However, notice that in the first case, the function returns a `Float64`, whereas in the second case it returns an `Int64`.
+
+```{julia}
+println(typeof(safe_divide(1, 2)))
+println(typeof(safe_divide(1, 0)))
+```
+
+The types of the arguments in both cases are integers, but ther types of the results depend on their values. This type instability may not matter here, but in more complex functions it can lead to severe performance degradation. An insidious problem is lurking, as one day you may need to use `safe_divide()` in some other program where its varying return type affects performance.
+
+In situations where performance or memory consumption makes us wonder whether one of our functions might have an issue Julia provides a convenient tool for ferrting out type instability: the `@code_warntype` macro. 
+
+```{julia}
+@code_warntype safe_divide(1, 2)
+```
+
+The macro prints a *lowered form* of the code: a representation of the computation in terms of a smaller set of operations. It is one of four stages of code transformation beginning without Julia source and ending with machine code specific to the CPU you're running on. This lowered form is similar to the version that is sent to the compiler, but contains the type information that we can examine when debugging performance issues.
+
+The output indicates a possible type instability issue is displayed in colored type. That is the signature of a type-unstable function.
+
+```{julia}
+function safe_divide2(a, b)
+    if b == 0
+        return 0.0
+    else
+        return a / b
+    end
+end
+```
+
+Since $a/b$ is always a float, even if $a$ and $b$ are integers, we can ensure that the function always returns a float by replacing the integer $0$ with $0.0$.
+
+```{julia}
+@code_warntype safe_divide2(1, 2)
+```
+
+Note: The output of `@code_warntype` often includes yellow warnings involving unions with the `Nothing` type, which is used when a function doesnt return a result. These arent usually considered to be type instabilities.
+
+Another way to correct this type instability problem is by defining the function using a type declaration: 
+
+```{julia}
+function safe_divide_typed(a, b)::Float64
+    if b == 0
+        return 0.0
+    else
+        return a / b
+    end
+end
+```
+
+### *Avoid Changing the Types of Variables*
+
+Assume you have a function to approximate $\pi$ using the Leibniz sum:
+$$
+\pi = \sum_{k=0}^{N} \frac{(-1)^k}{2k+1} \\
+ \cdots = 4\left(1 - \frac{1}{3} + \frac{1}{5} - \frac{1}{7} + \cdots\right)
+$$
+
+This is a poor way to get the digits of $\pi$ as it converges very slowly, but its useful for our purposes.
+
+```{julia}
+function leibnz(N)
+    s = 0
+    for n in 1:N
+        s += (-1)^(n + 1) * 1(2n - 1)
+    end
+end
+```
+
+```{julia}
+using Plots;
+pyplot();
+```
+

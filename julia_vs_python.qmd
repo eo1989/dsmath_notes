@@ -13,6 +13,7 @@ engine: julia
 ## A Technical Deep-Dive into Julia's Superior Performance
 
 ## Table of Contents
+
 The two languages will be compared across several dimensions, including:
 1. Raw Computational Speed
 2. Multiple Dispatch Magi
@@ -20,3 +21,58 @@ The two languages will be compared across several dimensions, including:
 4. Mathematical Notation & Elegance
 5. Metaprogramming & Code Generation
 6. Type System & Compiler Optimization
+
+
+## 1. Raw Computational Speed
+
+```{julia}
+function sum_array(arg)
+  total = 0.0
+  for x in arg
+    total += x
+  end
+  return total
+end
+
+
+# First call always compiles, subsequent calls are fast
+arg = rand(10_000_000)
+@time sum_array(arg)
+```
+
+```{python}
+def sum_array(arg):
+    total = 0.0
+    for x in arg:
+        total += x
+    return total
+
+import numpy as np
+from timeit import timeit
+
+arg = np.random.rand(10_000_000)
+# sum_array(arg) # ~2_000ms (~500x slower!!)
+print(f"{np.sum(arg)}")
+timeit('np.sum(arg)', globals=globals(), number=100) # ~10ms
+# timeit('np.sum(arg)') # ~10ms
+```
+
+```{julia}
+using PythonCall
+# np = pyimport("numpy")
+
+# @pyimport numpy as np
+@pyexec """
+    global np
+    import numpy as np
+
+    def sum_array(arg):
+        total = 0.0
+        for x in arg:
+            total += x
+        return total
+
+    arg = np.random.rand(10_000_000)
+""" => my_sum
+my_sum
+```

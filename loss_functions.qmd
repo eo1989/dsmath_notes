@@ -2,7 +2,7 @@
 title: Loss Functions
 format: html
 author: Ernest Orlowski
-jupyter: python3 (ipykernel)
+jupyter: python3
 ---
 
 # Loss Functions
@@ -73,6 +73,7 @@ $$
 where $\phi_0$ is the y-intercept and $\phi_1$ is the slope.
 ```{python}
 def f(x, phi0, phi1):
+    # return phi0 + phi1 * x
     y = phi0 + phi1 * x
     return y
 ```

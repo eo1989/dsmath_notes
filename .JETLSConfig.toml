@@ -1,0 +1,105 @@
+#:schema ./schemas/JETLS_schema.json
+
+formatter = "Runic"  # String preset: "Runic" (default) or "JuliaFormatter"
+
+[full_analysis]
+debounce = 1.0  # number (seconds), default: 1.0
+auto_instantiate = true  # boolean, default: true
+
+[initialization_options]
+n_analysis_workers = 2
+
+# [formatter.custom]  # Or custom formatter configuration
+# executable = ""  # string (path), optional
+# executable_range = ""  # string (path), optional
+
+# =============================================================
+[diagnostic]
+enabled = true  # boolean, default: true
+all_files = true  # boolean, default: true
+allow_unused_underscore = true  # boolean, default: true
+
+# =============================================================
+# =============================================================
+[[diagnostic.patterns]]
+pattern = "lowering/unused-argument"  # string, required
+match_by = "code"  # string, required, "code" or "message"
+match_type = "literal"  # string, required, "literal" or "regex"
+severity = "off"  # string or number, required, "error"/"warning"/"warn"/"information"/"info"/"hint"/"off" or 0/1/2/3/4
+# path = ""  # string (optional), glob pattern for file paths
+
+# Pattern matching against diagnostic code
+[[diagnostic.patterns]]
+pattern = "lowering/.*"
+match_by = "code"
+match_type = "regex"
+severity = "warning"
+
+# Disable inference diagnostic entirely
+[[diagnostic.patterns]]
+pattern = "inference/.*"
+match_by = "code"
+match_type = "regex"
+severity = "off"
+
+# Show unused arguments as hints (overrides category setting)
+# [[diagnostic.patterns]]
+# pattern = "lowering/unused-argument"
+# match_by = "code"
+# match_type = "literal"
+# severity = "hint"
+
+# Completely disable unused local variable diagnostics using integer value
+[[diagnostic.patterns]]
+pattern = "lowering/unused-local"
+match_by = "code"
+match_type = "literal"
+severity = 0
+
+# Pattern matching against diagnostic message
+[[diagnostic.patterns]]
+pattern = "Macro name `@interface` not found"
+match_by = "message"
+match_type = "literal"
+severity = "off"
+
+# Suppress all macro not found errors using regex
+[[diagnostic.patterns]]
+pattern = "Macro name `.*` not found"
+match_by = "message"
+match_type = "regex"
+severity = "off"
+
+# File path-based filtering: downgrade unused arguments in test files
+[[diagnostic.patterns]]
+pattern = "lowering/unused-argument"
+match_by = "code"
+match_type = "literal"
+severity = "hint"
+path = "test/**/*.jl"
+
+# Disable all diagnostics for generated files
+[[diagnostic.patterns]]
+pattern = ".*"
+match_by = "code"
+match_type = "regex"
+severity = "off"
+path = "gen/**/*.jl"
+# =============================================================
+# =============================================================
+
+[completion.latex_emoji]
+strip_prefix = false  # boolean, default: (unset) auto-detect
+
+[completion.method_signature]
+prepend_inference_result = true  # boolean, default: (unset) auto-detect
+
+[code_lens]
+references = true  # boolean, default: false
+testrunner = true  # boolean, default: true
+
+[inlay_hint]
+block_end_min_lines = 10  # integer, default: 25
+
+[testrunner]
+executable = "testrunner"  # string, default: "testrunner" (or "testrunner.bat" on Windows)

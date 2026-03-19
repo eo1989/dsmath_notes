@@ -1,0 +1,126 @@
+---
+author: Ernest Orlowski
+date: 03/13/2026
+# engine: julia
+exec:
+  echo: true
+format:
+  html:
+    code-fold: true
+jupyter: Gen
+title: Gradient Descent
+---
+
+## Gradient descent
+
+Let $f : \mbfit{R} \longrightarrow \mbfit{R}$ be a differentiable function which we
+want to *maximize*, that is, find $$x_{max} = {argmax} _{x \in \mbfit{R}}\enspace f(x)$$
+Based on our intuition, the process is quite simple. First conjure up an
+arbitrary starting point $x_0$, then define the sequence:
+$$
+\begin{aligned}
+    x_{n+1} = x_n + hf^\prime(x_n) \\
+    \text{where } h \in \lparen0, \infty\rpren
+\end{aligned}
+$$
+Is a parameter of our gradient descent algorithm, called the *learning rate*.
+
+<!-- TODO: Finish the definition notes -->
+
+```{python}
+class Function:
+    def __init__(self):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        pass
+
+    def prime(self):
+        pass
+
+    def parameters(self):
+        return dict()
+
+
+def gradient_descent(
+    f: Function,
+    x_init: float,  # initial guess
+    learning_rate: float = 0.1,  # learning rate
+    n_iter: int = 1_000,  # number of steps
+    return_all: bool = False,  # if true, returns all intermediate steps
+):
+    xs = [x_init]  # we store the intermediate results for viz
+
+    for n in range(n_iter):
+        x = xs[-1]
+        grad = f.prime(x)
+        x_next = x - learning_rate * grad
+        xs.append(x_next)
+
+    if return_all:
+        return xs
+    else:
+        return x
+```
+
+```{python}
+class Square(Function):
+    def __call__(self, x):
+        return x**2
+
+    def prime(self, x):
+        return 2 * x
+
+
+f = Square()
+
+gradient_descent(f, x_init=5.0)
+```
+
+```{python}
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def plot_gradient_descent(
+    f, xs: list, x_min: float, x_max: float, label: str = "f(x)"
+):
+    ys = [f(x) for x in xs]
+
+    grid = np.linspace(x_min, x_max, 1_000)
+    fs = [f(x) for x in grid]
+    with plt.style.context("seaborn-v0_8-whitegrid"):
+        grid = np.linspace(x_min, x_max, 1_000)
+        plt.figure(figsize=(8, 8))
+        plt.plot(grid, fs, label=label, c="b", lw=2.0)
+        plt.plot(xs, ys, label="gradient descent", c="r", lw=4.0)
+        plt.scatter(xs, ys, c="r", s=100.0)
+        plt.legend()
+        plt.show()
+
+
+xs = gradient_descent(
+    f, x_init=5.0, n_iter=25, learning_rate=0.2, return_all=True
+)
+plot_gradient_descent(f, xs, x_min=-5, x_max=5, label="x")
+```
+
+To demonstrate how a descent can get stuck in a local minima:
+
+```{python}
+class CosPlusSquare(Function):
+    def __call__(self, x):
+        return np.sin(x) + 0.5 * x
+
+    def prime(self, x):
+        return np.cos(x) + 0.5
+
+
+f = CosPlusSquare()
+xs = gradient_descent(
+    f, x_init=7.5, n_iter=20, learning_rate=0.2, return_all=True
+)
+plot_gradient_descent(f, xs, -10, 10, label="sin(x) + 0.5x")
+```
+

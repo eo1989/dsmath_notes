@@ -4,8 +4,8 @@ engine: jupyter
 jupyter:
   kernelspec:
     language: julia
-    name: julia-1.11
-    display_name: julia 1.11.6
+    name: julia-1.12
+    display_name: julia 1.12.4
 format: html
 ---
 # Linear Regression & Extensions
@@ -68,5 +68,3 @@ histogram(data, normed = true, bins = L, label = "Built-in histogram", c = :blue
 plot!(xGrid, h.(xGrid), lw = 3, c = :red, label = "Manual histogram", xlabel = "x", ylabel = "Frequency")
 plot!(xGrid, pdf.(Normal(), xGrid), label = "True PDF", lw = 3, c = :green, xlims = (-4, 4), ylims = (0, 0.5))
 ```
-
-

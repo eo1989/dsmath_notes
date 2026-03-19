@@ -1,21 +1,28 @@
 ---
 engine: julia
-author: "Ernest Orlowski"
+author: Ernest Orlowski
 format:
   html:
     code-fold: true
     toc: false
 ---
 
-# Processing & Summarizing Data
+# Ch 4 & 5
+
+## Ch 4 Processing & Summarizing Data
 
 ```{julia}
-using
+using DataFrames, CSV
+
+data = CSV.read("/data/purchaseData.csv", copycols=true)
+show(data, 5)
+
 ```
 
-# Statistical Inference Concepts
+## Ch 5 - Statistical Inference Concepts
 
-## 5.1 Random Sample & Distributions of Statistics
+### 5.1 Random Sample & Distributions of Statistics
+
 ```{julia}
 using Distributions, Random, Plots;
 pyplot();
@@ -44,12 +51,20 @@ stephist!(vars, bins=600, c=:red, normed=true, label="Histogram of Sample Varian
 ```
 
 ::: {.callout-note collapse="true"}
-After calculating the sample mean and variance, it can be seen that the estimated expected value of the simulated data is a good approximation to the mean and variance parameters of the underlying exponential distribution. That is, for an exponential distribution with rate $\lambda$, the mean is $\lambda^{-1}$ and the variance is $\lambda^{-2}$. The histograms of the sample means and sample variances are using 200 & 600 bins, respectively.
+After calculating the sample mean and variance, it can be seen that the
+estimated expected value of the simulated data is a good approximation to the
+mean and variance parameters of the underlying exponential distribution. That
+is, for an exponential distribution with rate $\lambda$, the mean is
+$\lambda^{-1}$ and the variance is $\lambda^{-2}$. The histograms of the sample
+means and sample variances are using 200 & 600 bins, respectively.
 :::
 
-## 5.2 Sampling from Normla Populations
+### 5.2 Sampling from Normla Populations
 
-Its assumed (*normality assumption*) that the distribution $F(x; \Theta)$ is a normal distribution and hence $\Theta = (\mu, \sigma^{2})$. The distribution of the random variables $\bar{X}$ and $\mathit{S}^{2}$ as well as transformations of them are well known. The three relationships play a key role:
+Its assumed (*normality assumption*) that the distribution $F(x; \Theta)$ is a
+normal distribution and hence $\Theta = (\mu, \sigma^{2})$. The distribution of
+the random variables $\bar{X}$ and $\mathit{S}^{2}$ as well as transformations
+of them are well known. The three relationships play a key role:
 
 $$
 \begin{aligned}

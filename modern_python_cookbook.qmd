@@ -162,6 +162,49 @@ First identify all the needs. It can be difficult to foresee all the alternative
 ```
 
 
+## Ch 7 - Basics of Classes and Objects
+
+### 7.1 - Using a class to encapsulate data & processing
+
+Class design is influenced by the **`SOLID`** design principles. The `Single Responsibility and Interface Segregation` principles offer helpful advice. Taken together, these principles advise us that a class should have methods narrowly focused on a single, well-defined responsibility.
+Another way of considering a class is as a group of closely-related functions working wtih common data. We call these methods for working with the data. A class definition should contain the smallest collection of methods needed for working with the object's data.
+
+A software object can be viewed as analagous to a thing - a noun. The behaviors of the class can be viewed as verbs. This identification with nouns and verbs gives us a hint as to how we can proceed to design classes to work effectively.
+
+Example: creating a dice game, using a pair of dice for game simulation.
+1. Write down a description of what an instance of the class does. These are problem statements. It's essential to focus on single-verb sentences, with a focus on only the nouns and verbs. Examples:
+    - The game of Craps has two standard dice.
+    - Each die has six faces, with point values from one to six.
+    - Dice are rolled by the player. While writers and editors prefer the active voice, "A player rolls the dice," the dice are often acted upon by other objects, making the passive voice slightly more useful.
+    - The total of the dice changes the state of the Craps game. Those rules are separate from the dice.
+    - If the two dice match, the number was described as being rolled "the hard way". If the two dice dont match, the roll was described as being made "the easy way".
+2. Identify all of the nouns in the sentences. With this example, the nouns include dice, faces, point values, and a player. The nouns identify different classes of objects that may be collaborators, like a player or a game. Nouns may also identify attributes of objects, like face or point value.
+3. Identify all the verbs of the sentence. Verbs become methods of the class. In this example, verbs include roll and match.
+
+```{python}
+from random import randint
+
+
+class Dice:
+    def __init__(self) -> None:
+        self.faces: tuple[int, int] = (0, 0)
+
+    def roll(self) -> None:
+        self.faces = (randint(1, 6), randint(1, 6))
+
+    def total(self) -> int:
+        return sum(self.faces)
+
+    def hardway(self) -> bool:
+        return self.faces[0] == self.faces[1]
+
+    def easyway(self) -> bool:
+        return self.faces[0] != self.faces[1]
+```
+The core idea here is to use ordinary rules of grammar - nouns, verbs, and adjectives - as a way to identify basic features of a class.
+
+
+
 
 ## Ch 12 - Graphics & Visualization with Jupyter Lab
 
@@ -232,8 +275,8 @@ source = Path.cwd().parent.parent / "Downloads" / "anscombe.json"
 
 with source.open() as source_file:
     json_doc = json.load(source_file)
-    source_data = (Series.model_validate(s) for s in json_doc)
     quartet = {s.series: s for s in source_data}
+    source_data = (Series.model_validate(s) for s in json_doc)
 ```
 
 
@@ -241,13 +284,13 @@ The value of `clean_data` contains a list of four individual `Series` objects.
 An expression like `quartet['I']` will reveal one of the series.
 
 ```{python}
-# x = [p.x for p in quartet["I"].data]
+x = [p.x for p in quartet["I"].data]
 
-# y = [p.y for p in quartet["I"].data]
+y = [p.y for p in quartet["I"].data]
 
-# plt.scatter(x, y)
-# plt.title(f"Series {quartet['I'].series}")
-# plt.show()
+plt.scatter(x, y)
+plt.title(f"Series {quartet['I'].series}")
+plt.show()
 ```
 
 #### 12.4.3 - 4.4

@@ -1,6 +1,6 @@
 ---
 title: manifolds
-format: 
+format:
   html:
     toc: true
     toc-location: left
@@ -21,3 +21,116 @@ author: Ernest Orlowski
 date: 08-26-2025
 ---
 
+# Note none of this will work unless I can find the csv file the author used.
+## Manifolds
+```{julia}
+using DataFrames, CSV, Plots, LaTeXStrings
+
+# _file = "/Users/uqjnazar/Dropbox/MathEngDeepLearningBook/LaTeXBook/FIGURE-BENOIT/for_GITHUB/CHAPT3/data_NEW_AE_NL.csv"
+
+# df = CSV.read(_file, DataFrame);
+
+```
+
+## Function Approximation
+
+```{julia}
+using Plots, Measures, LaTeXStrings
+
+
+g(x) = cos(2cos(x^2) + (1/4)*(x - 1)^2) + x/2 + 1
+low = 0; high = 4;
+
+function make_uv(r)
+    δ = (high - low)/(r - 1)
+    u = low:δ:high
+    v = g.(u);
+    u, v
+end
+
+function make_f(u, v)
+    r = length(u)
+    σ(x) = max(x, 0)
+    N0 = 1
+    N1 = r - 1
+    N2 = 1;
+    W1 = ones(N1, 1)
+    b1 = -[u[i] for i in 1:N1];
+    s(i) = (i == 0 ? 0 : (v[i + 1] - v[i])/(u[i + 1] - u[i]))
+    W2 = hcat([s(i) - s(i - 1) for i in 1:N1]...)
+    b2 = v[1]
+    f(x) = (W2*σ.(W1*x + b1) .+ b2)[1, 1]
+    return f
+end
+
+
+f25 = make_f(make_uv(25)...)
+```
+
+```{julia}
+xgrid = low:0.005:high
+
+u, v = make_uv(10)
+f25 = make_f(u, v)
+p1 = plot(xgrid, g.(xgrid), label = L"f^*(x)", lw = 2)
+     plot!(xgrid, f25.(xgrid), label = L"f(x ; r = 10)", lw = 2)
+     scatter!(u, v, label = L"(u_1, v_1), \ldots, (u_{10}, v_{10})")
+
+u, v = make_uv(30)
+f50 = make_f(u, v)
+p2 = plot(xgrid, g.(xgrid), label = L"f^*(x)", lw = 2)
+     plot!(xgrid, f50.(xgrid), label = L"f(x ; r = 30)", lw = 2)
+     scatter!(u, v, label = L"(u_1, v_1), \ldots, (u_{30}, v_{30})")
+
+plot(p1, p2, size = (800, 400), margin = 10mm, xlabel = "Input x", ylabel = "Output", legend = :topleft, ylim=(0, 5))
+
+```
+
+```{julia}
+plot(p1, size = (400, 400), xlabel = "Input x", ylabel = "Output", legend = :topleft, ylim = (0, 5))
+```
+
+Now for an example ...
+```{julia}
+savefig("./relu-approximation_a.pdf")
+```
+
+Now lets graph this:
+```{julia}
+plot(p2, size = (400, 400), xlabel = "Input x", ylabel = "Output", legend = :topleft, ylim = (0, 5))
+```
+
+```{julia}
+savefig("./relu-approximation_b.pdf")
+```
+
+# Loss Functions
+
+```{julia}
+using Distributions
+
+sq_err(x) = x^2
+abs_err(x) = abs(x)
+hub_err(x) = abs(x) < 1 ? x^2/2 : abs(x) - 1/2
+
+
+x_grid = -2:0.005:2
+p1 = plot(x_grid, sq_err.(x_grid), label = "Squared loss", legend = :topleft, xlabel = L"\hat{y}^{(i)} - y^{(i)}", ylabel = "Loss", legendfont = font(12))
+plot!(x_grid, abs_err.(x_grid), label = "Absolute loss", lw = 2)
+plot!(x_grid, hub_err.(x_grid), label = "Huber loss", lw = 2)
+
+```
+```{julia}
+savefig("error_functions.pdf")
+```
+
+```{julia}
+x_grid = -4:0.01:4
+
+p2 = plot(x_grid, pdf(Normal(), x_grid), label = "Normal Distribution", legend = :topleft, xlabel = L"x", ylabel = "Density", lw = 2, legendfont = font(12))
+plot!(x_grid, pdf(Laplace(), x_grid), label = "Laplace Distribution", lw = 2)
+```
+
+```{julia}
+savefig("pdf_functions.pdf")
+```

@@ -1,0 +1,23 @@
+"$schema" = "https://raw.githubusercontent.com/hougesen/mdsf/main/schemas/development/mdsf.schema.json"
+
+[languages]
+c = "clang-format"
+cpp = "clang-format"
+csharp = "csharpier"
+go = [["gci", "goimports-reviser", "goimports"], ["gofumpt", "gofmt"]]
+java = "google-java-format"
+javascript = "prettier"
+json =  ["biome:lint", "biome:check", ["biome:format", "jsonpp", "jq", "prettier"]]
+jsonc = ["biome:lint", "biome:check", ["biome:format", "jsonpp", "jq", "prettier"]]
+julia = ["runic", "juliaformatter.jl"]
+# python = [["usort", "isort"], ["ruff:format", "blue", "black", "yapf", "autopep8", "pyink"]]
+python = [["ruff:format"], "black", "yapf"]
+ruby = [["rubocop", "rufo", "rubyfmt", "standardrb"]]
+rust = "rustfmt"
+shell = [["shfmt", "beautysh"]]
+sql = [["sqlfluff:fix", "sqruff", "sql-formatter", "sqlfluff:format", "sqlfmt", "sleek"]]
+toml = ["tombi:lint", "tombi:format", "taplo"]
+typescript = "prettier"
+typst = "prettypst"
+yaml = ["yamllint", "yamlfix", "prettier", "yq"]
+"*" = ["typos"]

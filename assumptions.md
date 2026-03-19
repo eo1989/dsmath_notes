@@ -3,7 +3,7 @@ jupyter:
   jupytext:
     text_representation:
       extension: .md
-      format_name: markdown
+      format_name: Markdown
       format_version: '1.3'
       jupytext_version: 1.17.2
   kernelspec:
@@ -59,7 +59,7 @@ data = pd.read_csv("./data/skewnormdata.csv")
 data2 = pd.read_csv("./data/skewnormdata.csv")
 ```
 
-### Degrees of Freedom
+## Degrees of Freedom
 
 ```python
 fig, ax = plt.subplots(1, 2, figsize=(10, 5))
@@ -203,7 +203,6 @@ ftest(distro3["x"], distro1["x"])
 
 ### Independence Assumption
 
-
 ```python
 from statsmodels.stats.stattools import durbin_watson
 
@@ -252,7 +251,7 @@ normally_distributed = rng.normal(mu, sigma, 1_000)
 
 ### Kolmogorov-Smirnov
 
- - This test requires data to be centered at 0 with unit variance.
+- This test requires data to be centered at 0 with unit variance.
 
 ```python
 

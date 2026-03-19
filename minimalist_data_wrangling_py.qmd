@@ -1,0 +1,53 @@
+---
+author: Ernest Orlowski
+format:
+  html:
+    code-fold: true
+title: Minimalist Data Wrangling With Python
+---
+
+# Minimalist data wrangling with python
+
+Some quick and dirty notes from Minimalist Data Wrangling with Python.
+
+## Ch 4
+
+```{python}
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+
+mpl.use("kitcat")
+
+heights = np.genfromtxt(
+    "https://raw.githubusercontent.com/gagolews/teaching-data/master/marek/nhanes_adult_female_height_2020.txt"
+)
+print(f"heights variable: {heights[:6]}")
+
+cities = np.genfromtxt(
+    "https://raw.githubusercontent.com/gagolews/teaching-data/refs/heads/master/marek/population_largest_cities_unnamed.txt"
+)
+
+print(f"cities variable: {cities[:6]}")
+
+counts, bins, _not_important = plt.hist(
+    heights, bins=11, color="lightgrey", edgecolor="black"
+)
+plt.ylabel("Count")
+plt.show()
+```
+
+## Ch 9 exploring relationships between variables
+
+```{python}
+# skip the first row (column names)
+body = np.genfromtxt(
+    "https://raw.githubusercontent.com/gagolews/teaching-data/master/marek/nhanes_adult_female_bmx_2020.csv",
+    delimiter=",",
+)[1:, :]
+body.shape
+```
+
+Thus we know that $n = 4221$ adult female participants are described by seven
+different numerical features, in this order:
+

@@ -1,0 +1,70 @@
+---
+author: "Ernest Orlowski"
+format: html
+jupyter: Gen
+title: "Chapter 1"
+---
+
+## Linear simulation
+
+Some notes on `Gaussian AR(1)` models (figures 1.10, 1.12, & 1.13 in text)
+
+```{python}
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+
+# mpl.use("kitcat")
+
+
+a = 0.9
+b = 1.0
+
+mu_0, v_0 = 1, 1
+
+
+def compute_mean_and_var(t) -> None:
+    mu, v = mu_0, v_0
+    for i in range(t):
+        mu = a * mu + b
+        v = a**2 * v + 1
+
+    return mu, v
+
+
+def norm_pdf(x, mu, v) -> None:
+    return np.sqrt(1 / (2 * np.pi * v)) * np.exp(-((x - mu) ** 2) / (2 * v))
+```
+
+& here is the density sequence:
+
+```{python}
+dates = 1, 2, 4, 8, 16, 32, 64
+y_grid = np.linspace(-5, 20, 200)
+
+greys = [str(g) for g in np.linspace(0.2, 0.8, len(dates))]
+greys.reverse()
+
+# fig, ax = plt.subplots()
+# fig = plt.figure()
+ax = plt.subplots()
+
+for t, g in zip(dates, greys):
+    mu, v = compute_mean_and_var(t)
+    fig = plt.figure()
+    ax = plt.subplots()
+    ax.plot(
+        y_grid,
+        [norm_pdf(y, mu, v) for y in y_grid],
+        color=g,
+        lw=2,
+        alpha=0.6,
+        label=f"$t={t}$",
+    )
+
+ax.set_xlabel(r"$x$")
+ax.legend()
+plt.tight_layout()
+plt.show()
+```

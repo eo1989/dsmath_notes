@@ -1,17 +1,22 @@
-/.quarto/
+/.quarto
 .vscode
 .venv
-.jupyter_cache
+/.jupyter_cache
 .git
-.pytest_cache
-.quarto
-:-
-__pycache__
-_extensions
+/.pytest_cache
+/.quarto
+./:-
+/__pycache__
+/_extensions
+/_output
+.DS_Store
 
-**/*.quarto_ipynb
+*.quarto_ipynb
 
-./rnop.ipynb
+/rnop.ipynb
+
+*.lock
+.python-version
 
 ### Created by https://www.gitignore.io
 ### Julia ###
@@ -39,3 +44,10 @@ docs/site/
 # committed for packages, but should be committed for applications that require a static
 # environment.
 Manifest.toml
+Manifest*.toml
+
+*.conform.*
+
+/.quarto/
+**/*.quarto_ipynb
+/_*.local
