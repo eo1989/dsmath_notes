@@ -1,17 +1,19 @@
 # %%
 using DifferentialEquations
 using Plots
-using KittyT
+using KittyTerminalImages
+# using
+
 plotly()
 
 α = 0.75
 β = 0.1
 
-# %% [markdown]
+#%% [markdown]
 #
 # $du = f(\mu, \rho, \tau)d\tau + g(\mu, \rho, \tau)dW$
 #
-# %%
+#%%
 
 du = f(μ, ρ, τ)dτ + g(μ, ρ, τ)
 f(μ, ρ, τ) = α * μ

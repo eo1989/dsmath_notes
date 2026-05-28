@@ -59,4 +59,5 @@ function get_closest_expiry(ticker::String)
     closest_expiry = pyconvert(String, stock.options[1])
     return closest_expiry
 end
+
 export get_option_prices

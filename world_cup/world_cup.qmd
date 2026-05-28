@@ -488,7 +488,6 @@ their names and immediately see their activities on the football pitch:
 
 ```{python}
 player_name_selector = pn.widgets.AutocompleteInput(
-
     name="Player Name",
     options=list(players_df["shortName"]),
     placeholder="Type player name...",

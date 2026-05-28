@@ -1,0 +1,38 @@
+---
+author: Ernest Orlowski
+engine: julia
+format: html
+title: Molecular Biology & Genetics
+---
+
+# Objectives:
+
+- Quick refresh of DNA structures & the central dogma
+- refresh analyzing genetic data
+
+```{julia}
+using Random, Statistics, Plots, StatsBase
+using LinearAlgebra, DataFrames
+
+
+Random.seed!(42)
+```
+
+DNA structure has a helical structure, which enabled Watson & Crick's model. The double helix
+conists of:
+
+- **Sugar-phosphate backbone:** Provides structural support.
+- **Nitrogenous bases:** A, T, C, G in form of deoxynucleobases, the basis for the genetic code.
+- **Antiparallel strands:** $5\prime$ to $3\prime$ directionality.
+
+```{julia}
+const BASE_PAIRS = Dict('A' => 'T', 'T' => 'A', 'G' => 'C', 'C' => 'G')
+
+
+function complemtary_strand(dna::String)
+    return join([BASE_PAIRS[base] for base in uppercase(dna)])
+end
+
+
+
+```

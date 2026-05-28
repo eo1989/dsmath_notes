@@ -4,8 +4,8 @@ jupyter:
     text_representation:
       extension: .qmd
       format_name: quarto
-      format_version: '1.0'
-      jupytext_version: 1.17.3
+      format_version: "1.0"
+      jupytext_version: 1.19.3
   kernelspec:
     display_name: Gen
     language: python
@@ -14,6 +14,9 @@ jupyter:
 
 ```{python}
 from IPython.display import display, Image, HTML, Math
+import itables as it
+
+it.init_notebook_mode(all_interactive=True)
 ```
 
 ```{python}
@@ -27,9 +30,7 @@ import matplotlib as mpl
 
 modules = [np, sc, mpl]
 row = "<tr> <td>%s</td> <td>%s</td> </tr>"
-rows = "\n".join([
-    row % (module.__name__, module.__version__) for module in modules
-])
+rows = "\n".join([row % (module.__name__, module.__version__) for module in modules])
 s = "<table> <tr><th>Library</th><th>Version</th> </tr> %s</table>" % rows
 ```
 
@@ -53,4 +54,3 @@ class HTMLDisplayer:
 ```{python}
 HTMLDisplayer(s)
 ```
-

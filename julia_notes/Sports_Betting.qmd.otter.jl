@@ -1,0 +1,181 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+using Distributions, StatsPlots
+using Pipe, HTTP, CSV, DataFrames, LsqFit
+using PrettyTables
+using Random
+using KittyTerminalImages
+KittyTerminalImages.forceKittyDisplay!()
+
+d = Binomial(100, 0.2)  # number of trials, prob single trial
+println(params(d))
+println(mean(d))
+println(var(d))
+println(median(d))
+println(rand(d))
+
+rand(Xoshiro(123), d, (2, 3))
+pdf(d, 20)
+y = cdf(d, 25)
+quantile(d, 0.91)
+bar(x -> pdf(d, x), 1:40; label = "Binomial(n = 100, p = 0.2)")
+
+
+
+
+
+Random.seed!(42)
+
+ltURL = "https://bit.ly/apress_julia_alive_trees"
+dtURL = "https://bit.ly/apress_julia_dead_trees"
+ptsURL = "https://bit.ly/apress_julia_inv_points"
+docURL = "https://bit.ly/apress_julia_inv_doc"
+
+begin
+    lt = @pipe HTTP.get(ltURL).body |> CSV.File(_) |> DataFrame
+    dt = @pipe HTTP.get(dtURL).body |> CSV.File(_) |> DataFrame
+    pts = @pipe HTTP.get(ptsURL).body |> CSV.File(_) |> DataFrame
+    doc = @pipe HTTP.get(docURL).body |> CSV.File(_) |> DataFrame
+    # lt = @pipe HTTP.get(ltURL).body |> CSV.File(_) |> DataFrames.pretty_table
+    # dt = @pipe HTTP.get(dtURL).body |> CSV.File(_) |> DataFrames.pretty_table
+    # pts = @pipe HTTP.get(ptsURL).body |> CSV.File(_) |> DataFrames.pretty_table
+    # doc = @pipe HTTP.get(docURL).body |> CSV.File(_) |> DataFrames.pretty_table
+end
+
+# filtering
+lt = lt[:, ["idp", "c13", "v"]]
+dt = dt[:, ["idp", "c13", "v"]]
+trees = vcat(lt, dt)
+pts = pts[:, ["idp", "esspre", "cac"]]
+
+# compute the timber volumes per hectare
+
+"""
+    vHaContribution(volume,circumference)
+
+Return the contribution in terms of m³/ha of the tree.
+
+The French inventory system is based on a concentric sample method: small trees are sampled on a small area (6 metres radius), intermediate trees on a concentric area of 9 metres and only large trees (with a circonference larger than 117.5 cm) are sampled on a concentric area of 15 metres of radius.
+This function normalise the contribution of each tree to m³/ha.
+"""
+function vHaContribution(v, c13)
+    if c13 < 70.5
+        return v / (6^2 * pi / (100 * 100))
+    elseif c13 < 117.5
+        return v / (9^2 * pi / (100 * 100))
+    else
+        return v / (15^2 * pi / (100 * 100))
+    end
+end
+
+trees.vHa = vHaContribution.(trees.v, trees.c13)
+
+# aggregation annhilation
+ptsVols = combine(groupby(trees, ["idp"]), "vHa" => sum => "vHa", nrow => "ntrees")
+
+# join all the things
+pts = innerjoin(pts, ptsVols; on = "idp")
+
+# filter duece duece
+filter_nTrees = pts.ntrees .> 5   # we skip points with few trees
+filter_IHaveAgeClass = .!in.(pts.cac, Ref(["AA", "NR"]))
+filter_IHaveMainSpecies = .!ismissing.(pts.esspre)
+filter_overall = filter_nTrees .&& filter_IHaveAgeClass .&& filter_IHaveMainSpecies
+pts = pts[filter_overall, :]
+
+# computing age class
+pts.cac = (parse.(Int64, pts.cac) .- 1) .* 5 .+ 2.5
+
+# defining the model to fit
+logisticModel(age, params) = params[1] / (1 + exp(-params[2] * (age - params[3])))
+logisticModelVec(age, params) = logisticModel.(age, Ref(params))
+
+# setting initial values for the params to fit
+init_params = [1_000, 0.05, 50]  # max growth; growth rate; mid age
+
+# fitting model
+fit_obj = curve_fit(logisticModelVec, pts.cac, pts.vHa, init_params)
+fit_params = fit_obj.param
+
+# computting errors
+fit_obj.resid
+
+σ = stderror(fit_obj)
+CI = confidence_interval(fit_obj, 0.1)  # 10% significance level
+
+# plot!
+x = 0:(maximum(pts.cac) * 1.5)
+plot(
+    x -> logisticModel(x, fit_params),
+    0,
+    maximum(x);
+    label = "Fitted vols",
+    legend = :topleft,
+)
+
+# add obs to the plot
+plot!(pts.cac, pts.vHa; seriestype = :scatter, label = "Obs vHa")
+
+# differentiating the model per tree species
+species_cnt = combine(groupby(pts, :esspre), nrow => :count)
+sort!(species_cnt, "count"; rev = true)
+
+sp_label = doc[doc.donnee .== "ESSPRE", :]
+sp_label.sp_code = parse.(Int64, sp_label.code)
+species_cnt = leftjoin(species_cnt, sp_label; on = "esspre" => "sp_code")
+
+# plotting the 5 main species separately
+
+for (i, sp) in enumerate(species_cnt[1:5, "esspre"])
+    local fit_obj, fit_params, x
+    sp_label = species_cnt[i, "libelle"]
+    pts_sp = pts[pts.esspre .== sp, :]
+    fit_obj = curve_fit(logisticModelVec, pts_sp.cac, pts_sp.vHa, init_params)
+    fit_params = fit_obj.param
+    x = 0:(maximum(pts.cac) * 1.5)
+
+    if i == 1
+        myplot = plot(
+            x -> logisticModel(x, fit_params),
+            0,
+            maximum(x);
+            label = sp_label,
+            legend = :topleft,
+        )
+    else
+        myplot = plot!(
+            x -> logisticModel(x, fit_params),
+            0,
+            maximum(x);
+            label = sp_label,
+            legend = :topleft,
+        )
+    end
+    display(myplot)
+end

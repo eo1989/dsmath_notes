@@ -1,0 +1,139 @@
+line-length = 80
+target-version = "py312"
+cache-dir = "/Users/eo/.cache/ruff/"
+
+extension = { mdx = "markdown", qmd = "markdown" }
+
+exclude = [
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".git-rewrite",
+  ".hg",
+  ".ipynb_checkpoints",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pyenv",
+  ".pytest_cache",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  ".vscode",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "site-packages",
+  "venv",
+  ".git",
+  ".tox",
+  ".venv",
+  "venv",
+  "pytypes",
+  "node_modules",
+  "egg-info",
+  "env",
+  ".vim",
+  ".pytest_cache",
+  ".mypy_cache",
+  ".virtual_documents",
+  ".vscode",
+  ".ipynb_checkpoints",
+  "__pycache__",
+  "docs/source/conf.py",
+  "old",
+  "build",
+  "dist",
+  "*migrations*",
+]
+
+[lint]
+preview = true
+fixable = ["ALL"]
+unfixable = []
+
+# Allow minus-sign (U+2212), greek-small-letter-rho (U+03C1), and the asterisk-operator (U+2217),
+# which could be confused for "-", "p", and "*", respectively.
+allowed-confusables = ["−", "ρ", "∗"]
+
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+ignore = [
+  "COM",
+  "BLE",
+  "DTZ",
+  "D20",
+  "ISC",
+  "I",
+  "NPY",
+  "INP",
+  "PIE",
+  "F4",
+  "F82",
+  "F84",
+  "E4",
+  "E5",
+  "E7",
+  "E9",
+  "W",
+  "W2",
+]
+
+select = [
+  "A",
+  "B",
+  "COM",
+  "DTZ",
+  "EXE",
+  "G",
+  "ICN",
+  "INP",
+  "ISC",
+  "NPY",
+  "PD",
+  "PIE",
+  "PL",
+  "PT",
+  "PYI",
+  "Q",
+  "RET",
+  "S",
+  "T10",
+  "TC",
+  "TID",
+  "TRY",
+  "UP"
+]
+
+extend-select = ["C"]
+
+[lint.pydocstyle]
+convention = "numpy"  # maybe try google?
+
+[lint.mccabe]
+max-complexity = 10
+
+[lint.per-file-ignores]
+# "__init__.py" = ["F401"]
+"__init__.py" = ["E40", "F401"]
+"**/{tests,docs,tools}/*" = ["E40", "F401"]
+
+[format]
+preview = true
+quote-style = "double"
+skip-magic-trailing-comma = false
+docstring-code-format = true
+docstring-code-line-length = 100
+nested-string-quote-style = "alternating"
+
+# unknown field `fixable`,
+# expected one of:
+#     `exclude`, `preview`, `indent-style`, `quote-style`, `skip-magic-trailing-comma`,
+#     `line-ending`, `docstring-code-format`, `docstring-code-line-length`
+# fixable = ["ALL"]

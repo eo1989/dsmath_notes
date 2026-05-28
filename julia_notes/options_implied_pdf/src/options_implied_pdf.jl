@@ -25,7 +25,8 @@ function prob_below(
 )
     spot = get_spot_price(ticker)
     call_df, put_df = get_option_prices(ticker, expiry)
-    r == rate = 0.01
+    rate = 0.01
+    r = rate
     τ = get_τ(expiry)
     F = spot * exp(r * τ)
 

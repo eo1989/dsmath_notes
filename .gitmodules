@@ -1,0 +1,6 @@
+[submodule "introduction-datascience-python-book"]
+	path = introduction-datascience-python-book
+	url = https://github.com/DataScienceUB/introduction-datascience-python-book.git
+[submodule "introduction-to-datascience-python"]
+	path = introduction-to-datascience-python
+	url = https://github.com/UBC-DSCI/introduction-to-datascience-python.git

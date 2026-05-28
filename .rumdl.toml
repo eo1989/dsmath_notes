@@ -58,7 +58,7 @@ enabled = false  # opt-in rule
 # enable = ["MD001", "MD003", "MD004"]
 
 # List of file/directory patterns to include for linting (if provided, only these will be linted)
-include = ["docs/*.md", "src/**/*.md", "README.md", "./julia_notes/stats/*.qmd"]
+# include = ["docs/*.md", "src/**/*.md", "README.md", "./julia_notes/stats/*.qmd"]
 
 # List of file/directory patterns to exclude from linting
 exclude = [
@@ -87,7 +87,7 @@ exclude = [
 
 # Markdown flavor/dialect (uncomment to enable)
 # Options: mkdocs, gfm, commonmark
-flavor = "quarto"
+flavor = "gfm"
 
 # Rule-specific configurations (uncomment and modify as needed)
 
@@ -122,9 +122,11 @@ enabled = true
 on-missing-language-definition = "fail"
 timeout = 10000  # 10s
 
-[code-block-tools.languages.python]
-enabled = true
-lint = ["ruff:check"]
+# NOTE: Ruff now has its own markdown/quarto code-block formatting!!
+
+# [code-block-tools.languages.python]
+# enabled = false
+# lint = ["ruff:check"]
 
 [code-block-tools.tools.runic_formatter]
 command = [
@@ -141,15 +143,16 @@ stdin = true
 stdout = true
 # "--prioritize-config-file"
 
+# python = { lint = ["ruff:check"], format = ["ruff:format"] }
+
 [code-block-tools.languages]
-python = { lint = ["ruff:check"], format = ["ruff:format"] }
 shell = { lint = ["shellcheck"], format = ["shfmt"], on-error = "skip" }
 lua = { format = ["stylua"] }
 toml = { lint = ["tombi:lint"], format = ["tombi:format"] }
 yaml = { format = ["yamlfmt"] }
 markdown = { format = ["rumdl"] }
 # quarto = { format = ["rumdl", "jlfmt_fmt"], on-error = "skip" }
-quarto = { format = ["rumdl"], on-error = "fail" }
+# quarto = { format = ["rumdl"], on-error = "fail" }
 json = { lint = ["jq"], format = ["oxfmt"] }
 sql = { format = ["sql-formatter"], on-error = "skip" }
 julia = { format = ["runic_formatter"], on-error = "fail" }

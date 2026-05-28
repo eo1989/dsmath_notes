@@ -11,7 +11,8 @@ engine: julia
 
 # Covariance Ellipses
 
-A $2\times2$ covariance matrix $\Sigma$ can be plotted as an ellipse, which is a contour line of a Gaussian density function with variance $\Sigma$. See @fig-covariance for an example.
+A $2\times2$ covariance matrix $\Sigma$ can be plotted as an ellipse, which is a contour line of a
+Gaussian density function with variance $\Sigma$. See @fig-covariance for an example.
 
 ```{julia}
 #| label: fig-covariance

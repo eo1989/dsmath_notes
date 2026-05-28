@@ -21,17 +21,15 @@ end
 """
     Gatheral_Jacquier(a, b, ρ, m, σ)
 
-
-
 # Arguments
-- `a`: [TODO:parameter]
-- `b`: [TODO:parameter]
-- `ρ`: [TODO:parameter]
-- `m`: [TODO:parameter]
-- `σ`: [TODO:parameter]
+
+  - `a`: [TODO:parameter]
+  - `b`: [TODO:parameter]
+  - `ρ`: [TODO:parameter]
+  - `m`: [TODO:parameter]
+  - `σ`: [TODO:parameter]
 """
 function Gatheral_Jacquier(a, b, ρ, m, σ)::Float64
-
     return a + b * σ * sqrt(1 - ρ^2)
 end
 

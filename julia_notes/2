@@ -1,0 +1,58 @@
+sniprun_started_id=1
+Test Failed at none:1
+  Expression: :foo10 == Symbol("fool10")
+   Evaluated: foo10 == fool10
+
+:foo10
+sniprun_finished_id=1
+sniprun_started_id=2
+"foo10"
+sniprun_finished_id=2
+sniprun_started_id=3
+sniprun_finished_id=3
+sniprun_started_id=4
+Test Failed at none:1
+  Expression: :foo10 == Symbol("fool10")
+   Evaluated: foo10 == fool10
+
+sniprun_finished_id=4
+sniprun_started_id=5
+:foo10
+"foo10"
+sniprun_finished_id=5
+sniprun_started_id=6
+:foo10
+sniprun_finished_id=6
+sniprun_started_id=7
+"foo10"
+sniprun_finished_id=7
+sniprun_started_id=8
+:(b = -((ℵ + 1)))
+sniprun_finished_id=8
+sniprun_started_id=9
+Expr
+sniprun_finished_id=9
+sniprun_started_id=10
+Expr
+  head: Symbol =
+  args: Array{Any}((2,))
+    1: Symbol b
+    2: Expr
+      head: Symbol call
+      args: Array{Any}((2,))
+        1: Symbol -
+        2: Expr
+          head: Symbol call
+          args: Array{Any}((3,))
+            1: Symbol +
+            2: Symbol ℵ
+            3: Int64 1
+sniprun_finished_id=10
+sniprun_started_id=11
+1
+sniprun_finished_id=11
+sniprun_started_id=12
+foo (generic function with 1 method)
+sniprun_finished_id=12
+sniprun_started_id=13
+sniprun_finished_id=13

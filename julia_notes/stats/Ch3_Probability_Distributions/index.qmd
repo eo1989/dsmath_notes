@@ -1,0 +1,41 @@
+----------------------------------------------------------------------------------------------------
+<!-- panache-ignore-start -->
+author: Ernest Orlowski
+engine: julia
+format:
+  html:
+    toc: false
+    code-fold: true
+    page-layout: full
+    grid:
+      margin-width: 450px
+      body-width: 600px
+title: Chapter 3 - Probability Distributions
+<!-- panache-ignore-end -->
+----------------------------------------------------------------------------------------------------
+
+Quick recap on Bayesian Probability:
+
+$$
+P(H|D) = \frac{P(D|H)\cdot P(H)}{P(D)}
+$$
+
+- $P(H)$: This is the **Prior probability**. It represents the probability of a particular belief or
+  hypothesis of being true *before* we have any new data to contrast this belief.
+- $P(D|H)$: Frequently called **Likelihood**. From the conditional probablity, this is the
+  probability of data being observed if our hypothesis were true. Intuitively, if we collect some
+  data that contradicts our beliefs, this probability should be low.
+- $P(D)$: It is the measure of all possible ways we could have obtained the data we have. Generally
+  considered a normalizing constant.
+- $P(H|D)$: This is the **Posterior probability**. From the conditional probability, this represents
+  the probability of our hypothesis being true, given that we collected some data *D*.
+
+```{julia}
+begin
+  using Distributions
+  using StatsPlots
+
+  bar(Poisson(1.5), xlabel = "Spam emails", ylabel = "Probability", legend = false,
+      size = (400, 300))
+end
+```

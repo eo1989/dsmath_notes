@@ -7,6 +7,9 @@ format:
     number-sections: false
     embed-resources: true
 engine: jupyter
+execute:
+  cache: true
+  echo: true
 jupyter:
   kernelspec:
     display_name: jupyterlab_python3
@@ -18,23 +21,94 @@ title: Linear Algebra Notes
 ```{python}
 # setup
 
-
 import matplotlib.pyplot as plt
+import itables as it
 import numpy as np
 from matplotlib import rc
 import matplotlib.animation as animate
 
+it.init_notebook_mode(all_interactive=True)
+import ipywidgets as widgets
+
 rc("animation", html="jshtml")
 
+from sklearn.datasets import load_iris
 from skimage import io, color
 from scipy.signal import convolve2d
 
-import pandas as pd
+import sympy as sy
+sy.init_printing()
+np.set_printoptions(precision=3)
+np.set_printoptions(suppress = True)
+
+import pandas as rd
+# import pyarrow as pa
+# import polars as pl
 
 plt.backend_registry.load_backend_module("kitcat")
 from matplotlib_inline import backend_inline
 
 backend_inline.set_matplotlib_formats("svg")
+```
+
+```{python}
+iris = load_iris()
+iris_data = iris.data
+
+print(iris_data.shape)
+
+
+```
+
+## Mathmematics of Machine Learning (2025, Packt)
+
+## Practical Linear Algebra for Data Science
+
+### Chapter 7: Matrix Applications
+
+Covariance is simply the numerator of the correlation equation. Its the dot product between two
+mean-centered variables. Its interpreted in the same way as correlation (positive when variables
+move together, negative when they move apart, zero if there is no linear relationship), except that
+covariance retains the scale of the data (non-normalized) and; therefore, unbound by $\plussim 1$.
+It also has a normalization factor of $n - 1$, where $n$ is the number of data points. That
+normalization prevents the covariance from growing larger as you sum more data values together
+(analogous to dividing by $N$ to transform a sum into an average).
+$$
+\mathsfit{C}_{a,b} = \left(n - 1)\right^{-1} \\
+\sum^{n}_{\begin{subarray}{l} \mathbfit{\iota} = 1 \end{subarray}} \\
+(x_{\mathbfit{\iota}} - \bar{x})(y_{\mathbfit{\iota}} - \bar{y})
+$$
+
+if $\tilde{\bold{x}}$ to be the mean-centered variable $x$, then covariance is simply
+$$
+\frac{\tilde{\bold{x}}^T \tilde{\bold{y}}} {\left(n - 1\right)^{-1}}
+$$
+
+```{python}
+#| cache: true
+
+# setup
+
+# import matplotlib.pyplot as plt
+# import itables as it
+# import numpy as np
+# from matplotlib import rc
+# import matplotlib.animation as animate
+
+# it.init_notebook_mode(all_interactive=True)
+# import ipywidgets as widgets
+
+# rc("animation", html="jshtml")
+
+# from skimage import io, color
+# from scipy.signal import convolve2d
+
+# import pandas as pd
+
+# plt.backend_registry.load_backend_module("kitcat")
+# from matplotlib_inline import backend_inline
+
+# backend_inline.set_matplotlib_formats("svg")
 
 # https://archive.ics.uci.edu/ml/datasets/Communities+and+Crime
 
@@ -181,6 +255,12 @@ data.columns = [
 ]
 
 data.head(5)
+
+
+def use_show_in_interactive_output(table_name: str):
+    it.show(
+        data[["county"]],
+    )
 ```
 
 ```{python}

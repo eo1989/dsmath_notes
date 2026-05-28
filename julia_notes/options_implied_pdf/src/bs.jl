@@ -1,4 +1,5 @@
 using Distributions
+
 mutable struct BlackScholesMerton
     S::Float64  # underlying
     K::Float64  # strike
@@ -8,22 +9,24 @@ mutable struct BlackScholesMerton
     σ::Float64  # good ol' vol baby!
 end
 
-
 @enum OptionType begin
     Call
     Put
 end
 
-function (bs::BlackScholesMerton)(option_type::OptionType)
-    """
-    Returns the price of a European option as a solution to the black scholes PDE with boundary conditions
-    C(0,t) = 0 ∀t
-    lim S → ∞ C(S,t) = S - K
-    C(S,T) = max{S-K, 0}
+"""
+Returns the price of a European option as a solution to the black scholes PDE with boundary conditions
 
-    for what we wanna do, this is volatility → price mapping. We want to invert this, which we will do with newtons method.
-    this is literally the textbook formula on wikipedia.
-    """
+```math
+C\(0,t\) = 0 ∀t
+\lim\_{S → ∞} C(S,t) = S - K
+C(S,T) = max{S-K, 0}
+```
+
+for what we wanna do, this is volatility → price mapping. We want to invert this, which we will do with newtons method.
+this is literally the textbook formula on wikipedia.
+"""
+function (bs::BlackScholesMerton)(option_type::OptionType)
     S, K, T, t, r, σ = bs.S, bs.K, bs.T, bs.t, bs.r, bs.σ
     d1 = (log(S / K) + (r + 0.5 * σ^2) * (T - t)) / (σ * sqrt(T - t))
     d2 = d1 - σ * sqrt(T - t)
