@@ -1,7 +1,7 @@
 ---
 author: "Ernest Orlowski"
 format: html
-jupyter: Gen
+# jupyter: gen
 title: "Chapter 1"
 ---
 
@@ -10,7 +10,6 @@ title: "Chapter 1"
 Some notes on `Gaussian AR(1)` models (figures 1.10, 1.12, & 1.13 in text)
 
 ```{python}
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,7 +25,7 @@ mu_0, v_0 = 1, 1
 
 def compute_mean_and_var(t) -> None:
     mu, v = mu_0, v_0
-    for i in range(t):
+    for _i in range(t):
         mu = a * mu + b
         v = a**2 * v + 1
 
@@ -50,7 +49,7 @@ greys.reverse()
 # fig = plt.figure()
 ax = plt.subplots()
 
-for t, g in zip(dates, greys):
+for t, g in zip(dates, greys, strict=False):
     mu, v = compute_mean_and_var(t)
     fig = plt.figure()
     ax = plt.subplots()

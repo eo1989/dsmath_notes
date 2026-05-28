@@ -1,0 +1,21 @@
+---
+author: Ernest Orlowski
+engine: julia
+format: html
+title: Markov Chain Monte Carlo
+---
+
+<!-- NOTE:  from "https://storopoli.github.io/Bayesian-Julia/pages/05_MCMC" --> <!-- rumdl-disable-line MD044 -->
+
+## Simulations
+
+```{julia}
+using CairoMakie, Distributions, Random
+```
+
+Lets begin with a toy example problem of a multivariate normal distribution of
+$X$ and $Y$, where:
+
+$$
+[X Y] \sim \text{ Multivariate Nomral } \Left [\mu_X \mu_Y], \Sigma \Right)
+$$

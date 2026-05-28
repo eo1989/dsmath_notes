@@ -1,0 +1,523 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "eac960fc",
+   "metadata": {},
+   "source": [
+    "---\n",
+    "title: ibis - a better pandas\n",
+    "format:\n",
+    "  html:\n",
+    "    code-fold: true\n",
+    "    code-line-numbers: true\n",
+    "    syntax-highlighting:\n",
+    "      light: arrow-light\n",
+    "      dark: dracula\n",
+    "    ipynb-shell-interactivity: all\n",
+    "    code-block-bg: \"#F0F0F4\"\n",
+    "jupyter: jupyterlab_python3\n",
+    "---"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "1e5e18f7",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# NOTE: This isnt needed with qmd anymore as quarto now has a special yaml option\n",
+    "# called `ipynb-shell-interactivity: all` or `last_expr_or_assign`\n",
+    "from IPython.core.interactiveshell import InteractiveShell\n",
+    "\n",
+    "InteractiveShell.ast_node_interactivity = \"last_expr_or_assign\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6857ec46",
+   "metadata": {},
+   "source": [
+    "[Ibis](https://ibis-project.org) is a newer framework that uses duckdb as a\n",
+    "backend by default, and its API is a mix between duckdb and dplyr."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "81ba0d8a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import ibis\n",
+    "from ibis import _\n",
+    "\n",
+    "ibis.options.interactive = True\n",
+    "\n",
+    "import pandas as pd"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "65365b47",
+   "metadata": {},
+   "source": [
+    "`_` in Ibis is a special variable that refers to the last expression evaluated.\n",
+    "This is useful for chaining operations or for using the result of the last\n",
+    "expression in subsequet operations. By default, ibis defers execution until you\n",
+    "call `execute()` (much like dask). Using the above code\n",
+    "`ibis.options.interactive = True` makes it so that expressions are immediately\n",
+    "executed when displayed. As the text implies, its useful for interactive\n",
+    "exploration.\n",
+    "\n",
+    "Below is the equivalent code in both pandas and ibis for the `purchases.csv`\n",
+    "example dataset.\n",
+    "\n",
+    "::: {.columns}\n",
+    "::::: {.column width=\"50%\"}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "d245e71f",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>country</th>\n",
+       "      <th>amount</th>\n",
+       "      <th>discount</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>USA</td>\n",
+       "      <td>2000</td>\n",
+       "      <td>10</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>USA</td>\n",
+       "      <td>3500</td>\n",
+       "      <td>15</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>USA</td>\n",
+       "      <td>3000</td>\n",
+       "      <td>20</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>Canada</td>\n",
+       "      <td>120</td>\n",
+       "      <td>12</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>Canada</td>\n",
+       "      <td>180</td>\n",
+       "      <td>18</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5</th>\n",
+       "      <td>Canada</td>\n",
+       "      <td>3100</td>\n",
+       "      <td>21</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6</th>\n",
+       "      <td>UK</td>\n",
+       "      <td>130</td>\n",
+       "      <td>13</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7</th>\n",
+       "      <td>UK</td>\n",
+       "      <td>160</td>\n",
+       "      <td>16</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>8</th>\n",
+       "      <td>UK</td>\n",
+       "      <td>190</td>\n",
+       "      <td>19</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9</th>\n",
+       "      <td>France</td>\n",
+       "      <td>110</td>\n",
+       "      <td>11</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "  country  amount  discount\n",
+       "0     USA    2000        10\n",
+       "1     USA    3500        15\n",
+       "2     USA    3000        20\n",
+       "3  Canada     120        12\n",
+       "4  Canada     180        18\n",
+       "5  Canada    3100        21\n",
+       "6      UK     130        13\n",
+       "7      UK     160        16\n",
+       "8      UK     190        19\n",
+       "9  France     110        11"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "purchases = \"/Users/eo/Downloads/purchases.csv\"\n",
+    "pandas_df = pd.read_csv(purchases)\n",
+    "pandas_df.head(10)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "cbe4fd90",
+   "metadata": {},
+   "source": [
+    ":::::\n",
+    "\n",
+    "::::: {.column width=\"50%\"}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "5d56caec",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\">┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┓\n",
+       "┃<span style=\"font-weight: bold\"> country </span>┃<span style=\"font-weight: bold\"> amount </span>┃<span style=\"font-weight: bold\"> discount </span>┃\n",
+       "┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━┩\n",
+       "│ <span style=\"color: #7f7f7f; text-decoration-color: #7f7f7f\">string</span>  │ <span style=\"color: #7f7f7f; text-decoration-color: #7f7f7f\">int64</span>  │ <span style=\"color: #7f7f7f; text-decoration-color: #7f7f7f\">int64</span>    │\n",
+       "├─────────┼────────┼──────────┤\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">USA    </span> │   <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">2000</span> │       <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">10</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">USA    </span> │   <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">3500</span> │       <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">15</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">USA    </span> │   <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">3000</span> │       <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">20</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">Canada </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">120</span> │       <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">12</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">Canada </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">180</span> │       <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">18</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">Canada </span> │   <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">3100</span> │       <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">21</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">UK     </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">130</span> │       <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">13</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">UK     </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">160</span> │       <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">16</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">UK     </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">190</span> │       <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">19</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">France </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">110</span> │       <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">11</span> │\n",
+       "└─────────┴────────┴──────────┘\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┓\n",
+       "┃\u001b[1m \u001b[0m\u001b[1mcountry\u001b[0m\u001b[1m \u001b[0m┃\u001b[1m \u001b[0m\u001b[1mamount\u001b[0m\u001b[1m \u001b[0m┃\u001b[1m \u001b[0m\u001b[1mdiscount\u001b[0m\u001b[1m \u001b[0m┃\n",
+       "┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━┩\n",
+       "│ \u001b[2mstring\u001b[0m  │ \u001b[2mint64\u001b[0m  │ \u001b[2mint64\u001b[0m    │\n",
+       "├─────────┼────────┼──────────┤\n",
+       "│ \u001b[32mUSA    \u001b[0m │   \u001b[1;36m2000\u001b[0m │       \u001b[1;36m10\u001b[0m │\n",
+       "│ \u001b[32mUSA    \u001b[0m │   \u001b[1;36m3500\u001b[0m │       \u001b[1;36m15\u001b[0m │\n",
+       "│ \u001b[32mUSA    \u001b[0m │   \u001b[1;36m3000\u001b[0m │       \u001b[1;36m20\u001b[0m │\n",
+       "│ \u001b[32mCanada \u001b[0m │    \u001b[1;36m120\u001b[0m │       \u001b[1;36m12\u001b[0m │\n",
+       "│ \u001b[32mCanada \u001b[0m │    \u001b[1;36m180\u001b[0m │       \u001b[1;36m18\u001b[0m │\n",
+       "│ \u001b[32mCanada \u001b[0m │   \u001b[1;36m3100\u001b[0m │       \u001b[1;36m21\u001b[0m │\n",
+       "│ \u001b[32mUK     \u001b[0m │    \u001b[1;36m130\u001b[0m │       \u001b[1;36m13\u001b[0m │\n",
+       "│ \u001b[32mUK     \u001b[0m │    \u001b[1;36m160\u001b[0m │       \u001b[1;36m16\u001b[0m │\n",
+       "│ \u001b[32mUK     \u001b[0m │    \u001b[1;36m190\u001b[0m │       \u001b[1;36m19\u001b[0m │\n",
+       "│ \u001b[32mFrance \u001b[0m │    \u001b[1;36m110\u001b[0m │       \u001b[1;36m11\u001b[0m │\n",
+       "└─────────┴────────┴──────────┘"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df = ibis.read_csv(purchases)\n",
+    "df.head(10)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d1e0651f",
+   "metadata": {},
+   "source": [
+    ":::::\n",
+    ":::\n",
+    "\n",
+    "How much do we sell..? Lets take the total sum"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "c4d19e85",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "np.int64(17210)"
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "pandas_df[\"amount\"].sum()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "509ec514",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "17210"
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df[\"amount\"].sum().execute()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c9485d7a",
+   "metadata": {},
+   "source": [
+    "So that's why they wanted it by country! Pandas:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "97606a55",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>country</th>\n",
+       "      <th>total</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>Australia</td>\n",
+       "      <td>600</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>Brazil</td>\n",
+       "      <td>460</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>Canada</td>\n",
+       "      <td>3400</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>France</td>\n",
+       "      <td>500</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>Germany</td>\n",
+       "      <td>570</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5</th>\n",
+       "      <td>India</td>\n",
+       "      <td>720</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6</th>\n",
+       "      <td>Italy</td>\n",
+       "      <td>630</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7</th>\n",
+       "      <td>Japan</td>\n",
+       "      <td>690</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>8</th>\n",
+       "      <td>Spain</td>\n",
+       "      <td>660</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9</th>\n",
+       "      <td>UK</td>\n",
+       "      <td>480</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10</th>\n",
+       "      <td>USA</td>\n",
+       "      <td>8500</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "      country  total\n",
+       "0   Australia    600\n",
+       "1      Brazil    460\n",
+       "2      Canada   3400\n",
+       "3      France    500\n",
+       "4     Germany    570\n",
+       "5       India    720\n",
+       "6       Italy    630\n",
+       "7       Japan    690\n",
+       "8       Spain    660\n",
+       "9          UK    480\n",
+       "10        USA   8500"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "(pandas_df.groupby(\"country\").agg(total=(\"amount\", \"sum\")).reset_index())"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "0b500e1f",
+   "metadata": {},
+   "source": [
+    "Ibis:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "d064dbc7",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\">┏━━━━━━━━━━━┳━━━━━━━━┓\n",
+       "┃<span style=\"font-weight: bold\"> country   </span>┃<span style=\"font-weight: bold\"> totals </span>┃\n",
+       "┡━━━━━━━━━━━╇━━━━━━━━┩\n",
+       "│ <span style=\"color: #7f7f7f; text-decoration-color: #7f7f7f\">string</span>    │ <span style=\"color: #7f7f7f; text-decoration-color: #7f7f7f\">int64</span>  │\n",
+       "├───────────┼────────┤\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">Australia</span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">600</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">Brazil   </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">460</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">Canada   </span> │   <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">3400</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">France   </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">500</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">Germany  </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">570</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">India    </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">720</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">Italy    </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">630</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">Japan    </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">690</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">Spain    </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">660</span> │\n",
+       "│ <span style=\"color: #008000; text-decoration-color: #008000\">UK       </span> │    <span style=\"color: #008080; text-decoration-color: #008080; font-weight: bold\">480</span> │\n",
+       "│ <span style=\"color: #7f7f7f; text-decoration-color: #7f7f7f\">…</span>         │      <span style=\"color: #7f7f7f; text-decoration-color: #7f7f7f\">…</span> │\n",
+       "└───────────┴────────┘\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "┏━━━━━━━━━━━┳━━━━━━━━┓\n",
+       "┃\u001b[1m \u001b[0m\u001b[1mcountry\u001b[0m\u001b[1m  \u001b[0m\u001b[1m \u001b[0m┃\u001b[1m \u001b[0m\u001b[1mtotals\u001b[0m\u001b[1m \u001b[0m┃\n",
+       "┡━━━━━━━━━━━╇━━━━━━━━┩\n",
+       "│ \u001b[2mstring\u001b[0m    │ \u001b[2mint64\u001b[0m  │\n",
+       "├───────────┼────────┤\n",
+       "│ \u001b[32mAustralia\u001b[0m │    \u001b[1;36m600\u001b[0m │\n",
+       "│ \u001b[32mBrazil   \u001b[0m │    \u001b[1;36m460\u001b[0m │\n",
+       "│ \u001b[32mCanada   \u001b[0m │   \u001b[1;36m3400\u001b[0m │\n",
+       "│ \u001b[32mFrance   \u001b[0m │    \u001b[1;36m500\u001b[0m │\n",
+       "│ \u001b[32mGermany  \u001b[0m │    \u001b[1;36m570\u001b[0m │\n",
+       "│ \u001b[32mIndia    \u001b[0m │    \u001b[1;36m720\u001b[0m │\n",
+       "│ \u001b[32mItaly    \u001b[0m │    \u001b[1;36m630\u001b[0m │\n",
+       "│ \u001b[32mJapan    \u001b[0m │    \u001b[1;36m690\u001b[0m │\n",
+       "│ \u001b[32mSpain    \u001b[0m │    \u001b[1;36m660\u001b[0m │\n",
+       "│ \u001b[32mUK       \u001b[0m │    \u001b[1;36m480\u001b[0m │\n",
+       "│ \u001b[2m…\u001b[0m         │      \u001b[2m…\u001b[0m │\n",
+       "└───────────┴────────┘"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# NOTE: The .order_by() function is optional, only to align with the pandas\n",
+    "# output.\n",
+    "(df.group_by(\"country\").aggregate(totals=_.amount.sum()).order_by(\"country\"))"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "jupyterlab_python3",
+   "language": "python",
+   "name": "jupyterlab_python3",
+   "path": "/Users/eo/Library/Jupyter/kernels/jupyterlab_python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

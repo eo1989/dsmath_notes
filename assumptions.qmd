@@ -1,7 +1,8 @@
 ---
-title: Parametric Tests
 format:
-  toc: true
+  html:
+    toc: true
+engine: jupyter
 jupyter:
   jupytext:
     formats: ipynb,qmd:quarto
@@ -9,14 +10,15 @@ jupyter:
       extension: .qmd
       format_name: quarto
       format_version: "1.0"
-      jupytext_version: 1.17.3
+      jupytext_version: 1.19.3
   kernelspec:
-    display_name: "Python 3 (ipykernel)"
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
+title: Parametric Tests
 ---
-```{python}
 
+```{python}
 import math as mt
 
 import matplotlib.pyplot as plt
@@ -79,7 +81,7 @@ ax[0].annotate(
     "Median = 1.6",
     xy=(data["x"].median(), 0.078),
     xytext=(data["x"].median() + 2.8, 0.075),
-    arrowprops=dict(arrowstyle="->", facecolor="black"),
+    arrowprops={"arrowstyle": "->", "facecolor": "black"},
     fontsize=14,
 )
 
@@ -88,7 +90,7 @@ ax[0].annotate(
     "Mean = 1.8",
     xy=(1, 0.058),
     xytext=(3.5, 0.055),
-    arrowprops=dict(arrowstyle="->", facecolor="black"),
+    arrowprops={"arrowstyle": "->", "facecolor": "black"},
     fontsize=14,
 )
 
@@ -97,7 +99,7 @@ ax[1].annotate(
     "Median = 1.6",
     xy=(data2["x"].median(), 0.088),
     xytext=(data2["x"].median() + 2.4, 0.085),
-    arrowprops=dict(arrowstyle="->", facecolor="black"),
+    arrowprops={"arrowstyle": "->", "facecolor": "black"},
     fontsize=14,
 )
 
@@ -106,7 +108,7 @@ ax[1].annotate(
     "Mean = 1.8",
     xy=(0.6, 0.068),
     xytext=(data2["x"].median() + 2.8, 0.065),
-    arrowprops=dict(arrowstyle="->", facecolor="black"),
+    arrowprops={"arrowstyle": "->", "facecolor": "black"},
     fontsize=14,
 )
 plt.show()
@@ -240,8 +242,11 @@ ax[0, 1].hist(normally_distributed, bins=50)
 
 stats.probplot(np.exp(normally_distributed), dist="norm", plot=ax[1, 0])
 stats.probplot(normally_distributed, dist="norm", plot=ax[1, 1])
+
+plt.show()
 ```
-Visual inspection of the QQ plots and histograms should be enough to help you conclude whether the normality assumption has been violated.
+Visual inspection of the QQ plots and histograms should be enough to help you
+conclude whether the normality assumption has been violated.
 
 ```{python}
 # plt.savefig('./QQPlots.png', dpi = 300, facecolor = 'w', bbox_inches = 'tight')
@@ -255,26 +260,57 @@ Visual inspection of the QQ plots and histograms should be enough to help you co
 
 ### Kolmogorov-Smirnov
 
- - Measures a calculated test statistic against a table-based critical value:
-    - If test statistic > critical value, null hypthesis that the given distribution is normally distribution can be _rejected_.
-    - Can assess if the `p-value` is low enough to be significant.
-    - Test statistic is calculated as the absolute value of the maximum distance between all data points in a given distribution against the `cdf`(cumulative density function).
- - One-sample goodness-of-fit test: performs analysis against a benchmark `CDF`(cumulative density function).
- - Running the kstest` function in the `scipy.stats`, Using `stats.norm.cdf` performs the one-sample version.
- - Two-sample version tests against a specified distribution to determine whether the two distributions match.
-    - Must be provided as a numpy array instead of stats.norm.cdf.
- - This test requires data to be centered at 0 with unit variance.
- - Used to test the null hypothesis that a given sample distribution is normally distributed.
- - Focuses on the centrality of the data.
- - One of three most commonly used tests, the other two are:
-   - **`Anderson-Darling`** test
-     - Focuses more on the tails of the data than the center
-     - More likely to identify non-conformity to normality if data is heay-tailed w/ extreme outliers.
-     - Like Kolmogorov-Smirnov it performs well on large sample sizes
-   - **`Shapiro-Wilk`** test
-     - More general than both `AD` and `KS` tests
-     - More robust to small sample sizes
-       - Useful in an automated pipeline
-- Alternatively, may be better to lower the confidence level for the test being applied.
+- Measures a calculated test statistic against a table-based critical value:
+  - If test statistic > critical value, null hypthesis that the given
+    distribution is normally distribution can be *rejected*.
+  - Can assess if the `p-value` is low enough to be significant.
+  - Test statistic is calculated as the absolute value of the maximum distance
+    between all data points in a given distribution against the `cdf`(cumulative
+    density function).
+- One-sample goodness-of-fit test: performs analysis against a benchmark
+  `CDF`(cumulative density function).
+- Running the kstest`function in the`scipy.stats`, Using`stats.norm.cdf\`
+  performs the one-sample version.
+- Two-sample version tests against a specified distribution to determine whether
+  the two distributions match.
+  - Must be provided as a numpy array instead of stats.norm.cdf.
+- This test requires data to be centered at 0 with unit variance.
+- Used to test the null hypothesis that a given sample distribution is normally
+  distributed.
+- Focuses on the centrality of the data.
+- One of three most commonly used tests, the other two are:
+  - **`Anderson-Darling`** test
+    - Focuses more on the tails of the data than the center
+    - More likely to identify non-conformity to normality if data is heay-tailed
+      w/ extreme outliers.
+    - Like Kolmogorov-Smirnov it performs well on large sample sizes
+  - **`Shapiro-Wilk`** test
+    - More general than both `AD` and `KS` tests
+    - More robust to small sample sizes
+      - Useful in an automated pipeline
+- Alternatively, may be better to lower the confidence level for the test being
+  applied.
+
+```{python}
+mu, sigma = 0, 1
+normally_distributed = rng.normal(mu, sigma, 1_000)
+
+print(stats.kstest(normally_distributed, stats.norm.cdf))
+print(stats.kstest(np.exp(normally_distributed), stats.norm.cdf))
+```
+
+Showing a distribution of 1,000 samples with a
+$\mu = 100  \text{ and } \sigma = 2$ It needs to be centered to a mean of 0 with
+unit variance (standard deviation of 1).
+
+```{python}
+mu, sigma = 100, 2
+normally_distributed = rng.normal(mu, sigma, 1_000)
+normally_distributed_scaled = (
+    normally_distributed - normally_distributed.mean()
+) - normally_distributed.std()
+# the data is centered and scaled, check it with the Kolmogorov-Smirnov test.
+print(stats.kstest(normally_distributed_scaled), stats.norm.cdf)
+```
 
 #### Kolmogorov-Smirnov Requirement

@@ -1,0 +1,220 @@
+---
+author: Ernest Orlowski
+date: 05/16/2026
+format:
+  html:
+    code-fold: true
+    number-sections: false
+    embed-resources: true
+engine: jupyter
+jupyter:
+  kernelspec:
+    display_name: jupyterlab_python3
+    language: python
+    name: Python3
+title: Linear Algebra Notes
+---
+
+```{python}
+# setup
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import rc
+import matplotlib.animation as animate
+
+rc("animation", html="jshtml")
+
+from skimage import io, color
+from scipy.signal import convolve2d
+
+import pandas as pd
+
+plt.backend_registry.load_backend_module("kitcat")
+from matplotlib_inline import backend_inline
+
+backend_inline.set_matplotlib_formats("svg")
+
+# https://archive.ics.uci.edu/ml/datasets/Communities+and+Crime
+
+# raw data file
+# https://archive.ics.uci.edu/ml/machine-learning-databases/communities/communities.data
+
+# dataset citation (see also above website for more):
+# Redmond, M. A. and A. Baveja: A Data-Driven Software Tool for Enabling Cooperative Information Sharing Among Police Departments. European Journal of Operational Research 141 (2002) 660-678.
+
+# using the data in the first examples
+url = f"https://archive.ics.uci.edu/ml/machine-learning-databases/communities/communities.data"
+data = pd.read_csv(url, sep=",", header=None)
+
+# column labels
+data.columns = [
+    "state",
+    "county",
+    "community",
+    "communityname",
+    "fold",
+    "population",
+    "householdsize",
+    "racepctblack",
+    "racePctWhite",
+    "racePctAsian",
+    "racePctHisp",
+    "agePct12t21",
+    "agePct12t29",
+    "agePct16t24",
+    "agePct65up",
+    "numbUrban",
+    "pctUrban",
+    "medIncome",
+    "pctWWage",
+    "pctWFarmSelf",
+    "pctWInvInc",
+    "pctWSocSec",
+    "pctWPubAsst",
+    "pctWRetire",
+    "medFamInc",
+    "perCapInc",
+    "whitePerCap",
+    "blackPerCap",
+    "indianPerCap",
+    "AsianPerCap",
+    "OtherPerCap",
+    "HispPerCap",
+    "NumUnderPov",
+    "PctPopUnderPov",
+    "PctLess9thGrade",
+    "PctNotHSGrad",
+    "PctBSorMore",
+    "PctUnemployed",
+    "PctEmploy",
+    "PctEmplManu",
+    "PctEmplProfServ",
+    "PctOccupManu",
+    "PctOccupMgmtProf",
+    "MalePctDivorce",
+    "MalePctNevMarr",
+    "FemalePctDiv",
+    "TotalPctDiv",
+    "PersPerFam",
+    "PctFam2Par",
+    "PctKids2Par",
+    "PctYoungKids2Par",
+    "PctTeen2Par",
+    "PctWorkMomYoungKids",
+    "PctWorkMom",
+    "NumIlleg",
+    "PctIlleg",
+    "NumImmig",
+    "PctImmigRecent",
+    "PctImmigRec5",
+    "PctImmigRec8",
+    "PctImmigRec10",
+    "PctRecentImmig",
+    "PctRecImmig5",
+    "PctRecImmig8",
+    "PctRecImmig10",
+    "PctSpeakEnglOnly",
+    "PctNotSpeakEnglWell",
+    "PctLargHouseFam",
+    "PctLargHouseOccup",
+    "PersPerOccupHous",
+    "PersPerOwnOccHous",
+    "PersPerRentOccHous",
+    "PctPersOwnOccup",
+    "PctPersDenseHous",
+    "PctHousLess3BR",
+    "MedNumBR",
+    "HousVacant",
+    "PctHousOccup",
+    "PctHousOwnOcc",
+    "PctVacantBoarded",
+    "PctVacMore6Mos",
+    "MedYrHousBuilt",
+    "PctHousNoPhone",
+    "PctWOFullPlumb",
+    "OwnOccLowQuart",
+    "OwnOccMedVal",
+    "OwnOccHiQuart",
+    "RentLowQ",
+    "RentMedian",
+    "RentHighQ",
+    "MedRent",
+    "MedRentPctHousInc",
+    "MedOwnCostPctInc",
+    "MedOwnCostPctIncNoMtg",
+    "NumInShelters",
+    "NumStreet",
+    "PctForeignBorn",
+    "PctBornSameState",
+    "PctSameHouse85",
+    "PctSameCity85",
+    "PctSameState85",
+    "LemasSwornFT",
+    "LemasSwFTPerPop",
+    "LemasSwFTFieldOps",
+    "LemasSwFTFieldPerPop",
+    "LemasTotalReq",
+    "LemasTotReqPerPop",
+    "PolicReqPerOffic",
+    "PolicPerPop",
+    "RacialMatchCommPol",
+    "PctPolicWhite",
+    "PctPolicBlack",
+    "PctPolicHisp",
+    "PctPolicAsian",
+    "PctPolicMinor",
+    "OfficAssgnDrugUnits",
+    "NumKindsDrugsSeiz",
+    "PolicAveOTWorked",
+    "LandArea",
+    "PopDens",
+    "PctUsePubTrans",
+    "PolicCars",
+    "PolicOperBudg",
+    "LemasPctPolicOnPatr",
+    "LemasGangUnitDeploy",
+    "LemasPctOfficDrugUn",
+    "PolicBudgPerPop",
+    "ViolentCrimesPerPop",
+]
+
+data.head(5)
+```
+
+```{python}
+# numerical data only && drop a few additional columns, convert to a np array
+numberDataset = data._get_numeric_data()
+dataMatrix = numberDataset.drop(["state", "fold"], axis=1).values
+dataMatrix
+```
+
+```{python}
+# mean of each data feature
+_data_mean = np.mean(dataMatrix, axis=0)
+
+# mean-center the data w/ broadcasting
+_dataMatrixMean = dataMatrix - _data_mean
+
+# confirmation that any given feature has mean = 0 (or close to it)
+print(np.mean(_dataMatrixMean[:, 0]))
+```
+
+```{python}
+# covariance
+covMat = _dataMatrixMean.T @ _dataMatrixMean  # data matrix times its transpose
+covMat /= _dataMatrixMean.shape[0] - 1  # divide by N - 1
+
+# use a dynamic color scale
+clim = np.max(np.abs(covMat)) * 0.2
+
+plt.figure(figsize=(6, 6))
+plt.imshow(covMat, vmin=-clim, vmax=clim, cmap="afmhot")
+plt.colorbar()
+plt.title("Data Covariance Matrix")
+plt.savefig("Figure_ch07_01_LinAlg4DS.png", dpi=300)
+plt.show()
+```
+
+# Linear algebra

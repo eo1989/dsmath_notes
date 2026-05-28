@@ -1,0 +1,64 @@
+---
+title: "RxInfer Demo"
+engine: julia
+julia:
+  exeflags: ["--project=@."]
+execute:
+  cache: true
+  freeze: auto
+format:
+  html:
+    code-fold: true
+---
+
+# RxInfer demonstration code
+
+---
+- citations:
+    - [RxInfer.jl Documentation. "Getting Started".](https://biaslab.github.io/RxInfer.jl/stable/manuals/getting-started/)
+
+    - [RxInfer.jl Documentation.](https://biaslab.github.io/RxInfer.jl/stable/)
+
+    - [Bagaev et al. "Reactive Message Passing for Scalable Bayesian Inference". Scientific Programming. 2023.](https://www.hindawi.com/journals/sp/2023/6601690/)
+
+```{julia}
+using RxInfer, StatsPlots, Distributions, LinearAlgebra
+using Random; Random.seed!(42)
+```
+
+The data is generated from a gaussian distribution with a true success rate of 0.75.
+```{julia}
+true_success_rate = 0.75
+distribution = Bernoulli(true_success_rate)
+tosses = 10
+my_observations = rand(distribution, tosses)
+heads = sum(my_observations)
+println("Number of heads: $heads")
+```
+
+The model is defined as a Bernoulli distribution with an unknown success rate, which is given a uniform prior distribution.
+```{julia}
+@model function my_model(tosses, d)
+    # prior
+    success_rate ~ Beta(1, 1)
+    # likelihood
+    observations = datavar(Bool, tosses)
+    for i in 1:tosses
+        observations[i] ~ Bernoulli(success_rate)
+    end
+end
+```
+
+# Posterior
+
+```{julia}
+model = my_model(tosses)
+data = (observations = my_observations,)
+
+result = inference(; model = model, data = data)
+
+post = result.posteriors[:success_rate]
+
+post_mean = mean(post)
+post_std = std(post)
+```

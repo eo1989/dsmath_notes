@@ -16,5 +16,17 @@
   },
   "cuda_test.md": {
     "cuda_test.html": "bab28238"
+  },
+  "covariance_ex_jl.qmd": {
+    "covariance_ex_jl.html": "1c664e8a"
+  },
+  "./covariance_ex_jl.qmd": {
+    "covariance_ex_jl.html": "b88e530d"
+  },
+  "julia_notes/stats/Ch6_confidence_intervals/index.qmd": {
+    "index.html": "3932af9b"
+  },
+  "linear_algebra.qmd": {
+    "linear_algebra.html": "3b3a6beb"
   }
 }

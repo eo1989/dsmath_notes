@@ -1,0 +1,37 @@
+---
+author: Ernest Orlowski
+engine: julia
+format:
+  html:
+    toc: false
+    code-fold: true
+    page-layout: full
+    grid:
+        margin-width: 450px
+        body-width: 600px
+title: Chapter 6 - Confidence Intervals
+---
+
+Quickly checking Gadfly & other viz packages with Julia.
+
+```{julia}
+#| code-line-numbers: true
+#| width: 1200
+using Gadfly, Cairo, Fontconfig
+# using KittyTerminalImages
+
+gd = Gadfly;
+X = Float64[]; Y = Float64[]
+N = 1000;
+for i in 1:N
+    x = rand()
+    y = rand()
+    if (x*x + y*y) < 1
+        push!(X, x)
+        push!(Y, y)
+    end
+end
+dd = gd.plot(x = X, y = Y)
+# KittyTerminalImages.pushKittyDisplay!()
+draw(PNG("./random-pts.png", 15cm, 12cm), dd)
+```

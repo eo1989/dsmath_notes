@@ -1,0 +1,62 @@
+#:schema https://panache.bz/panache.schema.json
+# Markdown flavor (affects default extensions)
+
+flavor = "quarto"  # Options: pandoc, quarto, rmarkdown, gfm, commonmark
+
+line-width = 100  # Line width for wrapping
+line-ending = "auto"
+
+[flavor-overrides]
+"**/*.md" = "gfm"
+
+# Formatting options
+[format]
+wrap = "reflow"  # Wrapping mode. Options: "reflow", "preserve", "sentence"
+blank-lines = "preserve"  # Blankline handling. Options: "collapse", "preserve"
+math-delimiter-style = "preserve"  # "preserve", "dollars" $..$; $$...$$, "backslash" \(..\); \[..\]
+math-indent = 0
+tab-stops = "normalize"
+tab-width = 4
+
+# External code formatters
+[formatters]
+r = "air"
+julia = ["jlfmt", "runic"]
+python = "ruff"
+# julia = "jlfmt-file"
+# yaml = "yamlfmt" <- Panache has its own internal yml frontmatter formatter
+# based on pretty_yaml
+
+# for file-based formatters (jlfmt can do file based)
+# [formatters.jlfmt-file]
+# cmd = "jlfmt"
+# args = [ "--format_markdown", ]
+
+[formatters.jlfmt]
+cmd = "jlfmt"
+args = ["--format_markdown", "--inplace", "-"]
+
+[formatters.runic]
+cmd = "runic"
+args = [
+  "--extensions=jl,md,qmd",
+  "--docstrings",
+  "--inplace",
+  "--stdin-filename",
+  "{}"
+]
+stdin = false
+
+# [formatters.yamlfmt]
+# cmd = "yamlfmt"
+# args = ["-"]
+
+# [formatters.ruff]
+# cmd = "ruff"
+# args = "format"
+
+# External linters
+[linters]
+r = "jarl"
+python = "ruff"
+julia = "relint"

@@ -1,0 +1,89 @@
+---
+author: Ernest Orlowski
+engine: julia
+format: html
+title: Generic Programming
+---
+
+# 6.1 Overview
+
+Deeper dives into the structure of Julia, particularly into
+
+- abstract & concrete types
+- the type tree
+- designing and using generic interfaces
+- the role of generic interfaces in Julia performance
+
+Understanding them will help us
+
+- form a "mental model" of the language
+- design code that matches the "white-board" math
+- create code that can use (and be used by) a variety of other packages
+- write "well organized" Julia code that's easy to read, modify, maintain and
+debug
+- improve the speed at which the code runs
+
+## 6.1.1 Generic Programming is an Attitude
+
+Its important to think of generic programming as an interactive approach to
+uncover generality without compromising performance rather than as a set of
+rules.
+
+The core approach is to treate data structures and algorithms as loosely
+coupled, and is in direct contrast to the **is-a** approach of object-oriented
+programming.
+
+The notes will have a dual role of giving an introduction into the design of
+generic algorithms and describing how Julia helps make that possible.
+
+
+```{julia}
+using Pkg; pkgs = ["Distributions", "Interpolations", "Polynomials", "QuadGK",
+"StatsPlots"]; all(haskey.(Ref(Pkg.project().dependencies), pkgs)) || Pkg.add(pkgs)
+using LinearAlgebra, Statistics
+using Distributions, QuadGK, Polynomials, Interpolations
+using StatsPlots
+```
+
+## 6.2 Exploring type trees
+
+The connection between data structures and the algorithms which operate on them
+is handled by the type system.
+Concrete types (i.e., `Float64` or `Array{Float64, 2}`) are the data structures we
+apply an algorithm to, and the abstract types (eg the corresponding `Number` and
+`AbstractArray`) provide the mapping between a set of related data structures
+and algorithms.
+
+```{julia}
+using Distributions
+x = 1
+y = Normal()
+z = "foo"
+@show x, y, z
+@show typeof(x), typeof(y), typeof(z),
+@show supertype(typeof(x))
+
+
+# pipe operator, |>, is is equivalent
+@show typeof(x) |> supertype
+@show supertype(typeof(y))
+@show typeof(z) |> supertype
+@show typeof(x) <: Any;
+```
+
+Beyond the `typeof` and `supertype` functions, a few other usefule tools for
+analyzing the tree of types are discussed in another quarto notebook:
+`julia_types.qmd`.
+
+```{julia}
+# using Base: show_supertypes  # import the function from `Base`
+# show_supertypes(Int64)
+
+println(Int64 <:)
+```
+
+
+```{julia}
+subtypes(Integer)
+```
+

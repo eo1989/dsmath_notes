@@ -1,0 +1,21 @@
+---
+author: Ernest Orlowski
+engine: julia
+title: Multiple Dispatch
+format: html
+---
+
+# Concrete types
+
+There are two types on *concrete* types (types which store data) in Julia:
+*primitive* types & *composite* types. While primitives carry bits (Float64 is 64-bits wide), composite types carry a set of named fields. These named fields can be assigned primitive types or other composite types.
+
+Collecting values within composite types allows for easier manipulation of data and often improves structure, which can make them a convenient tool for larger research projects. Lets say we're interested in implementing a simple least squares estimator. First we might be tempted to simply define a function, like _LS, that takes two arrays and returns the coefficient:
+```{julia}
+function _LS(y::Array{Float64}, X::Array{Float64})
+    # calc & return the LS coefficient
+    return (X′ * X) \ (X′ * y)
+end
+```
+
+Most

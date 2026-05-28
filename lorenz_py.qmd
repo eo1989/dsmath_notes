@@ -1,0 +1,300 @@
+---
+title: Visualizing the Time Evolution of the Lorenz System
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.19.1
+  kernelspec:
+    display_name: Gen
+    language: python
+    name: python3
+---
+
+```{python}
+def lorenz_step(t, x, y, z, dt, sigma, rho, beta):
+    """Calculate the next step in the Lorenz system."""
+    dx = sigma * (y - x) * dt
+    dy = (x * (rho - z) - y) * dt
+    dz = (x * y - beta * z) * dt
+    return t + dt, x + dx, y + dy, z + dz
+```
+
+```{python}
+# implmenting a fx to obtain trajectories for the lorenz system
+
+import numpy as np
+
+
+def lorenz(t0, x0, y0, z0, dt, sigma, rho, beta, iter_num):
+    """Calculate the evolution of the Lorenz system."""
+    t, x, y, z = [np.zeros(iter_num + 1) for _ in range(4)]
+    t[0], x[0], y[0], z[0] = t0, x0, y0, z0
+    for i in range(iter_num):
+        t[i + 1], x[i + 1], y[i + 1], z[i + 1] = lorenz_step(
+            t[i], x[i], y[i], z[i], dt, sigma, rho, beta
+        )
+    return t, x, y, z
+```
+
+```{python}
+# integrating the lorenz system
+
+t, x, y, z = lorenz(
+    t0=0,
+    x0=1,
+    y0=1,
+    z0=1,
+    dt=0.01,
+    sigma=10,
+    rho=28,
+    beta=8 / 3,
+    iter_num=5_000,
+)
+```
+
+
+
+```{python}
+import matplotlib.pyplot as plt
+
+fig, axs = plt.subplots(3, 1, figsize=(8, 6), sharex=True)
+
+axs[0].plot(t, x, "k--", lw=1.1, label="x")
+axs[0].set_label("x")
+axs[0].legend()
+
+axs[1].plot(t, y, "k--", lw=1.1, label="y")
+axs[1].set_label("y")
+axs[1].legend()
+
+axs[2].plot(t, z, "k--", lw=1.1, label="z")
+axs[2].set_label("z")
+axs[2].legend()
+axs[2].set_xlabel("Time Step")
+
+plt.tight_layout()
+plt.show()
+```
+
+Let us visualize the Attractor
+
+```{python}
+fig = plt.figure()
+ax = fig.add_subplot(projection="3d")
+ax.plot(x, y, z, "k--", lw=0.5)
+ax.set_xlabel("X Axis")
+ax.set_ylabel("Y Axis")
+ax.set_zlabel("Z Axis")
+plt.show()
+```
+
+Demo the Butterfly Effect
+
+Integrating the system with a slightly perturbed initial condition.
+
+```{python}
+t_a, x_a, y_a, z_a = lorenz(
+    t0=0,
+    x0=1 + 0.000_001,
+    y0=1,
+    z0=1,
+    dt=0.01,
+    sigma=10,
+    rho=28,
+    beta=8 / 3,
+    iter_num=5_000,
+)
+```
+
+plotting the time evolution of the system with said slightly perturbed initial condition.
+
+```{python}
+fig, axs = plt.subplots(3, 1, figsize=(8, 6), sharex=True)
+
+axs[0].plot(t, x, "k--", lw=1.1, label="x")
+axs[0].plot(t_a, x_a, color="lightblue", lw=0.9, label="x_")
+axs[0].set_label("x")
+axs[0].legend()
+
+axs[1].plot(t, y, "k--", lw=1.1, label="y")
+axs[1].plot(t_a, y_a, color="lightblue", lw=0.9, label="y_a")
+axs[1].set_label("y")
+axs[1].legend()
+
+axs[2].plot(t, z, "k--", lw=1.1, label="z")
+axs[2].plot(t_a, z_a, color="lightblue", lw=0.9, label="z_a")
+axs[2].set_label("z")
+axs[2].legend()
+axs[2].set_xlabel("Time Step")
+
+plt.tight_layout()
+plt.show()
+```
+
+and plot the lorenz attractor with slightly perturbed initial conditions
+
+```{python}
+fig = plt.figure()
+ax = fig.add_subplot(projection="3d")
+ax.plot(x, y, z, "k--", lw=0.5, label="original")
+ax.plot(x_a, y_a, z_a, color="lightblue", lw=0.5, label="perturbed")
+ax.set_xlabel("X Axis")
+ax.set_ylabel("Y Axis")
+ax.set_zlabel("Z Axis")
+plt.show()
+```
+
+Implementing a Reservoir computer
+
+```{python}
+dim_system = 3
+dim_res = 300
+edge_probability = 0.1
+
+W_in = 2 * edge_probability * (np.random.rand(dim_res, dim_system) - 0.5)
+```
+
+... defining the reservoir state
+
+```{python}
+res_state = np.zeros(dim_res)
+```
+
+... defining the reservoir connections
+
+```{python}
+import networkx as nx
+
+scaling_factor = 1.1
+
+graph = nx.gnp_random_graph(dim_res, edge_probability)
+graph = nx.to_numpy_array(graph)
+
+A = 2 * (np.random.rand(dim_res, dim_res) - 0.5) * graph
+eigenvalues, _ = np.linalg.eig(A)
+
+A = A / np.absolute(np.amax(eigenvalues)) * scaling_factor
+```
+
+&& initialize the output weights
+
+```{python}
+W_out = np.zeros((dim_system, dim_res))
+```
+
+### Preparing the training & Validation Data
+
+```{python}
+iter_num = 10_000
+
+t, x, y, z = lorenz(
+    t0=0,
+    x0=1,
+    y0=1,
+    z0=1,
+    dt=0.01,
+    sigma=10,
+    rho=28,
+    beta=8 / 3,
+    iter_num=iter_num,
+)
+
+xyz = list(zip(x, y, z))
+
+split_ratio = 0.5
+split_idx = int(iter_num * split_ratio)
+
+t_train, xyz_train = t[:split_idx], np.array(xyz[:split_idx])
+t_val, xyz_val = t[split_idx:], np.array(xyz[split_idx:])
+```
+
+### Training the reservoir computer
+
+implementing a numerically stable sigmoid function
+
+```{python}
+def sigmoid(x):
+    """Compute the sigmoid function for the input array."""
+    return np.where(x >= 0, 1 / (1 + np.exp(-x)), np.exp(x) / (1 + np.exp(x)))
+```
+
+traing the reservoir computer
+
+```{python}
+R = np.zeros((dim_res, xyz_train.shape[0]))
+
+for i in range(xyz_train.shape[0]):
+    R[:, i] = res_state
+    res_state = sigmoid(np.dot(A, res_state) + np.dot(W_in, xyz_train[i]))
+
+Rt = np.transpose(R)
+regularization_factor = 0.0001
+inverse_part = np.linalg.inv(
+    np.dot(R, Rt) + regularization_factor * np.identity(R.shape[0])
+)
+
+W_out = np.dot(np.dot(xyz_train.T, Rt), inverse_part)
+```
+
+ and predict the behavior of the Lorenz system with the trained reservoir computer.
+
+```{python}
+steps_to_be_predicted = len(xyz_val)
+
+xyz_pred = np.zeros((steps_to_be_predicted, dim_system))
+
+for i in range(steps_to_be_predicted):
+    xyz_pred[i] = np.dot(W_out, res_state)
+    res_state = sigmoid(np.dot(A, res_state) + np.dot(W_in, xyz_pred[i]))
+```
+
+### Checking the Performance of the Res Computer
+
+extract the validation datasets individual components and the predicted outcomes from the reservoir computer.
+
+```{python}
+x_val, y_val, z_val = xyz_val[:, 0], xyz_val[:, 1], xyz_val[:, 2]
+x_pred, y_pred, z_pred = xyz_pred[:, 0], xyz_pred[:, 1], xyz_pred[:, 2]
+```
+
+Compare the trajectories
+
+```{python}
+fig, axs = plt.subplots(3, 1, figsize=(8, 6), sharex=True)
+
+axs[0].plot(t_val, x_val, "k--", lw=1.1, label="x lorenz")
+axs[0].plot(t_val, x_pred, color="orange", lw=0.9, label="x prediction")
+axs[0].set_label("x")
+axs[0].legend()
+
+axs[1].plot(t_val, y_val, "k--", lw=1.1, label="y lorenz")
+axs[1].plot(t_val, y_pred, color="orange", lw=0.9, label="y prediction")
+axs[1].set_label("y")
+axs[1].legend()
+
+axs[2].plot(t_val, z_val, "k--", lw=1.1, label="z lorenz")
+axs[2].plot(t_val, z_pred, color="orange", lw=0.9, label="z prediction")
+axs[2].set_label("z")
+axs[2].legend()
+axs[2].set_xlabel("Time Step")
+
+plt.tight_layout()
+plt.show()
+```
+
+And compare the Lorenz atrractors.
+
+```{python}
+fig = plt.figure()
+ax = fig.add_subplot(projection="3d")
+ax.plot(x_val, y_val, z_val, "k--", lw=0.5, label="lorenz system")
+ax.plot(x_pred, y_pred, z_pred, color="orange", lw=0.5, label="prediction")
+ax.set_xlabel("X Axis")
+ax.set_ylabel("Y Axis")
+ax.set_zlabel("Z Axis")
+plt.show()
+```
+

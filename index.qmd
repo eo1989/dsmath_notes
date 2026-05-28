@@ -1,12 +1,12 @@
 ---
-title: "Assessing Model Accuracy"
 format:
   html:
     code-fold: true
-    code-summary: "Show the code"
+    code-summary: Show the code
 execute:
   cache: true
   echo: fenced
+title: Assessing Model Accuracy
 ---
 
 <!-- # jupyter: -->
@@ -15,15 +15,27 @@ execute:
 <!-- #     language: python -->
 <!-- #     name: python3 -->
 
-# Assessing Model Accuracy
+## Assessing Model Accuracy
 
 ## Quality of Fit
 
-There must be some way to quantify how well our predictions match the observed data. The extent to which the predicted response value for a given observation is close to the true response for said observation. Within regressions, the most commonly used measure is the *mean squared error (MSE)*, given by $MSE = \frac{1}{n}\sum_{i = 1}^{n}(y_{i} - \hat{f}(x_{i}))^{2}$ where $\hat{f}(x_{i})$ is the prediction that $\hat{f}$ gives for the $i$th observation. The MSE will be small if the predicted responses are very close to the true response, and will be large if for some of the observations, the predicted and true responses differ substantially.
+There must be some way to quantify how well our predictions match the observed
+data. The extent to which the predicted response value for a given observation
+is close to the true response for said observation. Within regressions, the most
+commonly used measure is the *mean squared error (MSE)*, given by
+$MSE = \frac{1}{n}\sum_{i = 1}^{n}(y_{i} - \hat{f}(x_{i}))^{2}$ where
+$\hat{f}(x_{i})$ is the prediction that $\hat{f}$ gives for the $i$th
+observation. The MSE will be small if the predicted responses are very close to
+the true response, and will be large if for some of the observations, the
+predicted and true responses differ substantially.
 
-The goal, roughly speaking, is to obtain the lowest test MSE. There is no garauntee that the method with the lowest training MSE will also produce the lowest test MSE. The problem is that many statistical methods specifically estimate coefficients so as to minimize the training set MSE. The training MSE can be quite small, but the test MSE is often much larger.
+The goal, roughly speaking, is to obtain the lowest test MSE. There is no
+garauntee that the method with the lowest training MSE will also produce the
+lowest test MSE. The problem is that many statistical methods specifically
+estimate coefficients so as to minimize the training set MSE. The training MSE
+can be quite small, but the test MSE is often much larger.
 
-```{python .code-overflow-wrap}
+```{python}
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -65,9 +77,10 @@ sns.pairplot(autos)
 ```
 
 ::: {.callout-note}
-
 - Observations made:
-  - Number of cylinders increases, the weight increases, the rate of acceleration increases, horsepower increases, displacement increases, and efficiency (mpg) decreases.
+  - Number of cylinders increases, the weight increases, the rate of
+    acceleration increases, horsepower increases, displacement increases, and
+    efficiency (mpg) decreases.
   - As displacement increases, horsepower increases & efficiency decreases.
   - As horsepower increases, acceleration decreases, efficiency (mpg) decreases.
   - As weight increases, efficiency decreases.
@@ -84,19 +97,30 @@ sns.pairplot(autos)
   - As model year increases, efficiency increases.
 ::: -->
 
-Recall we arent interested in whether $\hat{f}(x_{o}) ≈ y_{i}$; the goal, instead, is to know whether $\hat{f}(x_{0})$ is approximately equaol to $y_{0}$, where $(x_{0}, y_{0})$ is a *previously unseen test observation not used to train the statistical learning method*. Choose the method that gives the lowest *test MSE*, as opposed to the lowest training MSE. Aka, if you have a large number of test observations, you could compute: $\text{Avg}(y_{0} - \hat{f}(x_{0}))^{2}$, the average squared prediction error for these test observations $(x_{0}, y_{0})$.
+Recall we arent interested in whether $\hat{f}(x_{o}) ≈ y_{i}$; the goal,
+instead, is to know whether $\hat{f}(x_{0})$ is approximately equaol to $y_{0}$,
+where $(x_{0}, y_{0})$ is a *previously unseen test observation not used to
+train the statistical learning method*. Choose the method that gives the lowest
+*test MSE*, as opposed to the lowest training MSE. Aka, if you have a large
+number of test observations, you could compute:
+$\text{Avg}(y_{0} - \hat{f}(x_{0}))^{2}$, the average squared prediction error
+for these test observations $(x_{0}, y_{0})$.
 
 ## Bias/Variance Tradeoff
 
 ### Bias
 
-- Error between average model prediction and ground truth aka how far your average is from the truth.
-- The bias of the estimated function tells us the capacity of the underlying model to predict the values
-$\textit{bias} = \mathbin{E}[f\prime(x)] - f(x)$
+- Error between average model prediction and ground truth aka how far your
+  average is from the truth.
+- The bias of the estimated function tells us the capacity of the underlying
+  model to predict the values $\textit{bias} = \mathbin{E}[f\prime(x)] - f(x)$
 
 ### Variance
 
-Formally variance, $var(x)$ -  or its square root, standard deviation - measures how densely packed around the [`Expected Value`]("./expected_value.qmd") points in the distribution are: meaning, the spread of the point distribution. Its formally defined as:
+Formally variance, $var(x)$ - or its square root, standard deviation - measures
+how densely packed around the [`Expected Value`]("./expected_value.qmd") points
+in the distribution are: meaning, the spread of the point distribution. Its
+formally defined as:
 $$
 var = \begin{cases}
     \sum^{n}_{i=1} \enspace(x_i - \mu)^2 ρ(x_i) &\rightarrow \text{for a discrete n point distribution} \\
@@ -105,8 +129,10 @@ var = \begin{cases}
 $$
 
 - Average variability in the model prediction for the given dataset
-- The variance of the estimated function tells you how much the function can adjust to the change in the dataset
-$\textit{variance} = \mathbin{E}[(f^\prime(x) - \mathbin{E}[f^\prime(x)])^2]$
+
+- The variance of the estimated function tells you how much the function can
+  adjust to the change in the dataset
+  $\textit{variance} = \mathbin{E}[(f^\prime(x) - \mathbin{E}[f^\prime(x)])^2]$
 
 - High Bias
   - Overly simplified model
@@ -119,10 +145,10 @@ $\textit{variance} = \mathbin{E}[(f^\prime(x) - \mathbin{E}[f^\prime(x)])^2]$
   - Low error on train data, high error on test data
   - Will model the noise in the input
 
-| #   | Error Category | Bias | Variance | Train Error | Test Error |
-| --- | -------------- | ---- | -------- | ----------- | ---------- |
-| 1   | Overfit        | Low  | High     | Small       | Large      |
-| 2   | Underfit       | High | Low      | Large       | Large      |
+  | #   | Error Category | Bias | Variance | Train Error | Test Error |
+  | --- | -------------- | ---- | -------- | ----------- | ---------- |
+  | 1   | Overfit        | Low  | High     | Small       | Large      |
+  | 2   | Underfit       | High | Low      | Large       | Large      |
 
 ```{python}
 import matplotlib.pyplot as plt
@@ -158,21 +184,46 @@ plt.grid(True)
 plt.show()
 ```
 
-The bias-variance tradeoff is a fundamental concept in ML that helps us understand the tradeoff between two types of errors that a model can make: bias and variance. Its crucial to strike a balance between these two types of errors to create a model that generalizes well to new, unseen data.
+The bias-variance tradeoff is a fundamental concept in ML that helps us
+understand the tradeoff between two types of errors that a model can make: bias
+and variance. Its crucial to strike a balance between these two types of errors
+to create a model that generalizes well to new, unseen data.
 
-**Bias** refers to the error due to overly simplistic assumptions in the learning algorithm. A high bias model may underfit the data, meaning it fails to capture the underlying patterns and relationships in the data, leading to poor performance on both the training and test sets.
+**Bias** refers to the error due to overly simplistic assumptions in the
+learning algorithm. A high bias model may underfit the data, meaning it fails to
+capture the underlying patterns and relationships in the data, leading to poor
+performance on both the training and test sets.
 
-**Variance** refers to the error due to the model's sensitivity to small fluctuations in the training data. A high variance model might overfit the data, meaning it fits the training data very well but fails to generalize to new data points, resulting in poor performance on the test set.
+**Variance** refers to the error due to the model's sensitivity to small
+fluctuations in the training data. A high variance model might overfit the data,
+meaning it fits the training data very well but fails to generalize to new data
+points, resulting in poor performance on the test set.
 
 **Tradeoff Explanation with Example:**
 
-- Consider a simple example of fitting a polynomial to a set of data points. Imagine you have a set of points that form a curve on a 2D plane. Your goal is to find a polynomial equation that fits these points:
+- Consider a simple example of fitting a polynomial to a set of data points.
+  Imagine you have a set of points that form a curve on a 2D plane. Your goal is
+  to find a polynomial equation that fits these points:
 
-  i. **High Bias, Low Variance:** Suppose you decide to fit a linear equation to the data points. This is a high bias model because it makes a simplistic assumption about the underlying relationship. As a result, the fitted line might not capture the curve's nuances, leading to a bias in the predictions. However, this simple model is less sensitive to variations in the training data, so it might perform similarly on both the training and test sets.
+  i. **High Bias, Low Variance:** Suppose you decide to fit a linear equation to
+     the data points. This is a high bias model because it makes a simplistic
+     assumption about the underlying relationship. As a result, the fitted line
+     might not capture the curve's nuances, leading to a bias in the
+     predictions. However, this simple model is less sensitive to variations in
+     the training data, so it might perform similarly on both the training and
+     test sets.
 
-  ii. **Low Bias, High Variance:** Now consider fitting a high-degree polynomial (ex: 10th-degree polynomial) to the data points. This is a low bias model because it has the flexibility to closely follow the data points, even capturing their intricate details. However, this mode is more sensitive to the noise and fluctuations in the training data, resulting in high varince. Its likely to fit the training data extremely well but may not generalize to new data points, leading to poor performance on the test set.
+     ii. **Low Bias, High Variance:** Now consider fitting a high-degree
+         polynomial (ex: 10th-degree polynomial) to the data points. This is a
+         low bias model because it has the flexibility to closely follow the
+         data points, even capturing their intricate details. However, this mode
+         is more sensitive to the noise and fluctuations in the training data,
+         resulting in high varince. Its likely to fit the training data
+         extremely well but may not generalize to new data points, leading to
+         poor performance on the test set.
 
-In reality the tradeoff isnt so simple. You wont see such clean depictions of bias vs variance to pick an optimal point. Here is a more realistic plot:
+In reality the tradeoff isnt so simple. You wont see such clean depictions of
+bias vs variance to pick an optimal point. Here is a more realistic plot:
 
 ```{python}
 from sklearn.linear_model import LinearRegression
@@ -332,7 +383,7 @@ z_value = st.norm.ppf((1 + confidence) / 2.0)
 print(z_value)
 ```
 
-----
+--------------------------------------------------------------------------------
 
 ```{python}
 # RData = pr.read_r("../../Downloads/data_ml.RData")
@@ -359,7 +410,6 @@ print(z_value)
 ```
 
 ```{python}
-
 # fpr, tpr, thresholds = roc_curve()
 
 # Module for AUC computation

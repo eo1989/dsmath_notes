@@ -2,19 +2,22 @@
 author: Ernest Orlowski
 date: 03/13/2026
 # engine: julia
-exec:
+execute:
   echo: true
 format:
   html:
     code-fold: true
-jupyter: Gen
+# jupyter: gen
 title: Gradient Descent
 ---
 
 ## Gradient descent
 
-Let $f : \mbfit{R} \longrightarrow \mbfit{R}$ be a differentiable function which we
-want to *maximize*, that is, find $$x_{max} = {argmax} _{x \in \mbfit{R}}\enspace f(x)$$
+Let $f : \mbfit{R} \longrightarrow \mbfit{R}$ be a differentiable function which
+we want to *maximize*, that is, find
+$$
+x_{max} = {argmax} _{x \in \mbfit{R}}\enspace f(x)
+$$
 Based on our intuition, the process is quite simple. First conjure up an
 arbitrary starting point $x_0$, then define the sequence:
 $$
@@ -39,7 +42,7 @@ class Function:
         pass
 
     def parameters(self):
-        return dict()
+        return {}
 
 
 def gradient_descent(
@@ -51,7 +54,7 @@ def gradient_descent(
 ):
     xs = [x_init]  # we store the intermediate results for viz
 
-    for n in range(n_iter):
+    for _n in range(n_iter):
         x = xs[-1]
         grad = f.prime(x)
         x_next = x - learning_rate * grad
@@ -123,4 +126,3 @@ xs = gradient_descent(
 )
 plot_gradient_descent(f, xs, -10, 10, label="sin(x) + 0.5x")
 ```
-

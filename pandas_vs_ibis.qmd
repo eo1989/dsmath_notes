@@ -1,0 +1,82 @@
+---
+title: ibis - a better pandas
+format:
+  html:
+    code-fold: true
+    code-line-numbers: true
+    syntax-highlighting:
+      light: arrow-light
+      dark: dracula
+    ipynb-shell-interactivity: all
+    code-block-bg: "#F0F0F4"
+jupyter: jupyterlab_python3
+---
+
+```{python}
+# NOTE: This isnt needed with qmd anymore as quarto now has a special yaml option
+# called `ipynb-shell-interactivity: all` or `last_expr_or_assign`
+# from IPython.core.interactiveshell import InteractiveShell
+
+# InteractiveShell.ast_node_interactivity = "last_expr_or_assign"
+```
+
+[Ibis](https://ibis-project.org) is a newer framework that uses duckdb as a backend by default, and
+its API is a mix between duckdb and dplyr.
+
+```{python}
+import ibis
+from ibis import _
+
+ibis.options.interactive = True
+
+import pandas as pd
+```
+
+`_` in Ibis is a special variable that refers to the last expression evaluated. This is useful for
+chaining operations or for using the result of the last expression in subsequet operations. By
+default, ibis defers execution until you call `execute()` (much like dask). Using the above code
+`ibis.options.interactive = True` makes it so that expressions are immediately executed when
+displayed. As the text implies, its useful for interactive exploration.
+
+Below is the equivalent code in both pandas and ibis for the `purchases.csv` example dataset.
+
+::: {.columns}
+::::: {.column width="50%"}
+```{python}
+purchases = "/Users/eo/Downloads/purchases.csv"
+pandas_df = pd.read_csv(purchases)
+pandas_df.head(10)
+```
+:::::
+
+::::: {.column width="50%"}
+```{python}
+df = ibis.read_csv(purchases)
+df.head(10)
+```
+:::::
+:::
+
+How much do we sell..? Lets take the total sum
+
+```{python}
+pandas_df["amount"].sum()
+```
+
+```{python}
+df["amount"].sum().execute()
+```
+
+So that's why they wanted it by country! Pandas:
+
+```{python}
+(pandas_df.groupby("country").agg(total=("amount", "sum")).reset_index())
+```
+
+Ibis:
+
+```{python}
+# NOTE: The .order_by() function is optional, only to align with the pandas
+# output.
+(df.group_by("country").aggregate(totals=_.amount.sum()).order_by("country"))
+```

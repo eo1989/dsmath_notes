@@ -9,6 +9,29 @@ format:
         margin-width: 450px
         body-width: 600px
 ---
+
+# Inference Concepts
+
+To make a statistical inference involves *data*, a *model*, and *analysis*. The data is assumed to be compromised of random samples from the model. The goal of the analysis is then to make informed statements about population parameters of the model based on the data. Such statementstypically take one of the following forms:
+
+> *Point estimation* - Determination of a single value (or vector of values) representing a best estimate of the parameter(s). In this case, the notion of "best" can be defined in different ways.
+> *Confidence intervals* - Determination of a range of values where the parameter lies. Under the model and the statistical process used, it is garaunteed that the parameter lies within this range with a pre-specified probability.
+> *Hypothesis tests* - The process of determining if the parameter lies in a given region, in the complement of that region, or fails to take on a specific value. Such tests often represent a scientific hypothesis in a very natural way.
+
+Most point estimation, confidence intervals, and hypothesis tests here are elementary. See `chapter 6` to confidence intervals in detail, and `chapter 7` to hypothesis tests in detail.
+
+As a refresher, when carrying out frequentist statistical inference, its assumed there is some underlying distribution $F(x;\theta)$ from which our samples are taken, where $\theta$ is a scalar, or vector-valued, unknown parameter we want to know. It's also assumed that each observation is statistically independent and identically distributed as the rest, meaning the observations are taken as *i.i.d. random variables*. This is the `random sample` in mathematical statistics. Random variables of the observations are denoted by $X_1, ..., X_n$, and their respective values by $x_1, ..., x_n$. Typically, *statistics* are computed from the `random sample`, like the *sample mean* and *sample variance*. However, ee can model these *statistics* as random variables themselves.
+$$
+\bar{X} = \frac{1}{n} \Sigma^{n}_{i=1}X_{i}\text{, } \enspace \text{ and } S^{2} = \frac{1}{n - 1}  \Sigma^{n}_{i=1}(X_{i} - \bar{X})^{2}
+$$
+
+Note: that for $S^2$, the denominator is $n - 1$ (as opposed to $n$ as you might expect). This makes $S^2$ an ***unbiased estimator***.
+
+The phrase *statistic* implies a quantity calculated based on the sample. When working with data, the sample mean and variance are nothing but numbers computed from our sample observations. That being said, in the inference paradigm, random variables are associated to these values, since they themselves are functions of the random sample.
+
+A great way to see the fact that $\bar{X}$ and $S^2$ are `random variables`, is to assume we have sampled data from an exponential distribution with $\lambda = 4.5^{-1}$ (a mean of 4.5 and a variance of 20.25). If $n = 10$ observations, then the sample mean, and variance, are random variables.
+
+
 ```{julia}
 #| code-line-numbers: true
 #| width: 1200

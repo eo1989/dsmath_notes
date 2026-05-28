@@ -1,0 +1,18 @@
+# engines: [julia]
+project:
+  type: website
+  output-dir: _output
+format:
+  html:
+    html-math-method: katex
+    code-fold: false
+    toc: true
+    toc-depth: 2
+    number-sections: false
+    # toc: false
+  revealjs:
+    menu: false
+    progress: false
+# search: false
+execute:
+  daemon: true

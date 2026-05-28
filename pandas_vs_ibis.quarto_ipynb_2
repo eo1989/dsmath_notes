@@ -1,0 +1,194 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: ibis - a better pandas\n",
+        "format:\n",
+        "  html:\n",
+        "    code-fold: true\n",
+        "    code-line-numbers: true\n",
+        "    syntax-highlighting:\n",
+        "      light: arrow-light\n",
+        "      dark: dracula\n",
+        "    ipynb-shell-interactivity: all\n",
+        "    code-block-bg: \"#323236\"\n",
+        "jupyter: jupyterlab_python3\n",
+        "---"
+      ],
+      "id": "5b8eec45"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# NOTE: This isnt needed with qmd anymore as quarto now has a special yaml option\n",
+        "# called `ipynb-shell-interactivity: all` or `last_expr_or_assign`\n",
+        "from IPython.core.interactiveshell import InteractiveShell\n",
+        "\n",
+        "InteractiveShell.ast_node_interactivity = \"last_expr_or_assign\""
+      ],
+      "id": "c4bedc35",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "[Ibis](https://ibis-project.org) is a newer framework that uses duckdb as a\n",
+        "backend by default, and its API is a mix between duckdb and dplyr."
+      ],
+      "id": "e0453a1a"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import ibis\n",
+        "from ibis import _\n",
+        "\n",
+        "ibis.options.interactive = True\n",
+        "\n",
+        "import pandas as pd"
+      ],
+      "id": "5fba109f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "`_` in Ibis is a special variable that refers to the last expression evaluated.\n",
+        "This is useful for chaining operations or for using the result of the last\n",
+        "expression in subsequet operations. By default, ibis defers execution until you\n",
+        "call `execute()` (much like dask). Using the above code\n",
+        "`ibis.options.interactive = True` makes it so that expressions are immediately\n",
+        "executed when displayed. As the text implies, its useful for interactive\n",
+        "exploration.\n",
+        "\n",
+        "Below is the equivalent code in both pandas and ibis for the `purchases.csv`\n",
+        "example dataset.\n",
+        "\n",
+        "::: {.columns}\n",
+        "::::: {.column width=\"50%\"}"
+      ],
+      "id": "d8e09d5d"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "purchases = \"/Users/eo/Downloads/purchases.csv\"\n",
+        "pandas_df = pd.read_csv(purchases)\n",
+        "pandas_df.head(10)"
+      ],
+      "id": "93c5956b",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        ":::::\n",
+        "\n",
+        "::::: {.column width=\"50%\"}"
+      ],
+      "id": "6d9091f3"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df = ibis.read_csv(purchases)\n",
+        "df.head(10)"
+      ],
+      "id": "a7379523",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        ":::::\n",
+        ":::\n",
+        "\n",
+        "How much do we sell..? Lets take the total sum"
+      ],
+      "id": "9a3d0624"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "pandas_df[\"amount\"].sum()"
+      ],
+      "id": "073edc85",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df[\"amount\"].sum().execute()"
+      ],
+      "id": "0d2c4da3",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "So that's why they wanted it by country! Pandas:"
+      ],
+      "id": "f6e30b6b"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "(pandas_df.groupby(\"country\").agg(total=(\"amount\", \"sum\")).reset_index())"
+      ],
+      "id": "0fa2e8fa",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Ibis:"
+      ],
+      "id": "7c083c6a"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# NOTE: The .order_by() function is optional, only to align with the pandas\n",
+        "# output.\n",
+        "(df.group_by(\"country\").aggregate(totals=_.amount.sum()).order_by(\"country\"))"
+      ],
+      "id": "cde8fe9c",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "jupyterlab_python3",
+      "language": "python",
+      "display_name": "jupyterlab_python3",
+      "path": "/Users/eo/Library/Jupyter/kernels/jupyterlab_python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

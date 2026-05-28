@@ -5,12 +5,8 @@ date: 7/21/2025
 format:
   html:
     code-fold: true
+    toc: false
 engine: julia
-# jupyter:
-#     kernelspec:
-#         name: julia-1.11
-#         display_name: julia-1.11
-#         language: julia
 ---
 
 # Covariance Ellipses
@@ -27,3 +23,12 @@ gr(size = (500, 280))
 covellipse([0, 2], [2 1; 1 4], n_std = 2, aspect_ratio = 1, label = "cov1")
 covellipse!([1, 0], [1 -0.5; -0.5 3], showaxes = true, label = "cov2")
 ```
+
+$$
+\begin{equation}
+  \nabla \times \vec{\mathbf{B}} -\, \frac1c, \frac{\partial\vec{\mathbf{E}}}{∂ t} &= \frac{4\pi}{c} \vec{\mathbf{j}} \\
+  \nabla ⋅ \vec{\mathbf{E}} &= 4π ρ \\
+  \nabla \times \vec{\mathbf{E}}\, +\, \frac1c, \frac{\partial\vec{\mathbf{B}}}{∂ t} &= \vec{\mathbbf{0}} \\
+  \nabla ⋅ \vec{\mathbf{B}} &= 0
+\end{equation*}
+$$

@@ -1,3 +1,4 @@
+# <<ipynb_nvim:raw>>
 ---
 title: Julia Second Language
 author: Ernest Orlowski
@@ -20,8 +21,9 @@ engine: julia
 Will begin from Chapter 4, will come back to redo these later. I.e. creating a table of contents, adding links, etc.
 
 # Chapter 4: Julia as a Spreadsheet
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 # will be used later
 using Statistics
 
@@ -40,9 +42,9 @@ price(pizza) = pizza[3]
 issmall(pizza) = portion(pizza) == 'S'
 islarge(pizza) = portion(pizza) == 'L'
 isbbq(pizza) = name(pizza) == "bbq chicken"
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 function print_sin_table(increment, max_angle)
     # println("  angle |   sin(angle)")
     # println("------- | -------------")
@@ -58,10 +60,13 @@ function print_sin_table(increment, max_angle)
         angle += increment
     end
 end
-```
+# <</ipynb_nvim>>
 
+# <<ipynb_nvim:markdown>>
 ### Creating a trig table
-```{julia}
+# <</ipynb_nvim>>
+
+# <<ipynb_nvim:code>>
 function print_trig_table(inc, maxangle)
     print("│ ")
     printstyled($"\theta$ ", color = :cyan)
@@ -81,75 +86,88 @@ function print_trig_table(inc, maxangle)
         angle += inc
     end
 end
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 n = length("-0.966")
-```
+# <</ipynb_nvim>>
 
-
-
-```{julia}
+# <<ipynb_nvim:code>>
 degs = [0, 15, 30, 45, 60];
 rads = map(deg2rad, degs)
 _rads = map(deg2rad, 0:15:90)
 map(sin, _rads)
-```
+# <</ipynb_nvim>>
 
+# <<ipynb_nvim:markdown>>
 `map` is known as a `higher-order function`. These are functions that take other functions 
 as arguments and/or return functions. It essentially takes a function $f$ as the first argument and applies it to 
 every element in a collection $xs$, producing a new collection, $ys$ as output.
-```{julia}
-ys = map(f, xs)
-```
+# <</ipynb_nvim>>
 
+# <<ipynb_nvim:code>>
+ys = map(f, xs)
+# <</ipynb_nvim>>
+
+# <<ipynb_nvim:markdown>>
 The second argument, `xs`, doesnt need to be an actual array. It can be anything that can iterate over and get multiple elements; thus you can also
 use a range object.
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 map(deg2rad, 0:15:90)
-```
+# <</ipynb_nvim>>
 
+# <<ipynb_nvim:markdown>>
 Or even combine them to create a sine table:
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 map(sin, map(deg2rad, 0:15:90))
-```
+# <</ipynb_nvim>>
 
+# <<ipynb_nvim:markdown>>
 This isnt the most efficient way to go about it though, as it creates an new, intermediate, array that is only used once (but for every call to `map`). A more efficient way is to use an anonymous function:
-```{julia}
+# <</ipynb_nvim>>
+
+# <<ipynb_nvim:code>>
 map(x -> sin(deg2rad(x)), 0:15:90)
-```
+# <</ipynb_nvim>>
+
+# <<ipynb_nvim:markdown>>
 This is more memory efficient.
 Another solution is to preallocate an array of the same size as the output and use this array in repeat mappings.
 The mutating `map!` function allows that. It writes its outputs straight to the array given as a second argument. The third argument
 is in the input, which wont be modified by the `map!` function.
 However, if the input is of the same type and length as required by the output, then you can reuse the input argument as your output argument:
 
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 result = zeros(Float64, length(0:15:90))
 map!(deg2rad, result, 0:15:90)
 map!(sin, result, result)  # The input and destination array must have equal length!
-```
+# <</ipynb_nvim>>
 
+# <<ipynb_nvim:markdown>>
 This isnt the most elegant solution, manipulating function calls are best avoided, as they make analyzing data flow much more difficult.
 Best practice is to collect all transformations into one function, which reduces the number of memory allocations the code makes and is often easier to read.
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 degsin(deg) = sin(deg2rad(deg))
 map(degsin, 0:15:90)
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 # as a multiline function:
 function degsin(deg)
     sin(deg2rad(deg))
 end
 map(degsin, 0:15:90)
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 # knock off version of `map` called `transform`.
 function transform(fun, xs)
     ys = []
@@ -158,50 +176,50 @@ function transform(fun, xs)
     end
     ys
 end
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 # quick tutorial on Chars
 x = Int8(65)
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 ch = Char(65)
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 ch = Char(66)
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 'A'
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 Int8('A')
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 'A' + 'B'
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 'A' + 4
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 chars = ['H', 'E', 'L', 'L']
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 collect(chars)
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 join(chars)
-```
+# <</ipynb_nvim>>
 
-```{julia}
+# <<ipynb_nvim:code>>
 collect("HELL")
-```
+# <</ipynb_nvim>>
 
